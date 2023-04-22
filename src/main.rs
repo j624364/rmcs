@@ -1,6 +1,8 @@
+mod error;
 mod node;
 mod parser;
 mod tokeniser;
+mod value;
 
 fn _print_tokens(source: &str) {
     let tokens = tokeniser::tokenise(source).unwrap();
