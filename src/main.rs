@@ -1,6 +1,6 @@
 mod parser;
 
-fn print_tokens(source: &str) {
+fn _print_tokens(source: &str) {
     let tokens = parser::tokenise(source).unwrap();
 
     for token in tokens {
@@ -10,7 +10,4 @@ fn print_tokens(source: &str) {
     println!();
 }
 
-fn main() {
-    print_tokens("(+ 1 (- 5 6))");
-    print_tokens("(println \"Hello, World!\")");
-}
+fn main() {}

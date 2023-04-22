@@ -1,6 +1,6 @@
 use std::io::Error;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum TokenType {
     Identifier(String),
     LBracket,
@@ -49,9 +49,9 @@ impl TokeniserState {
 
     pub fn push_token(&mut self, token_type: TokenType, token_length: usize) {
         let col_no = self.col_no - token_length;
-
         self.output
             .push(Token::new(token_type, self.line_no, col_no));
+
         self.current_token.clear();
     }
 
@@ -116,6 +116,10 @@ pub fn tokenise(source: &str) -> Result<Vec<Token>, Error> {
             },
             TokeniserMode::String => match c {
                 '"' => {
+                    tokeniser_state.push_token(
+                        TokenType::String(tokeniser_state.current_token.clone()),
+                        tokeniser_state.current_token.len(),
+                    );
                     tokeniser_mode = TokeniserMode::Normal;
                 }
                 '\\' => {}
@@ -138,5 +142,95 @@ pub fn tokenise(source: &str) -> Result<Vec<Token>, Error> {
         }
     }
 
+    tokeniser_state.try_push_token();
+
     Ok(tokeniser_state.get_tokens())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn panic_source(source: &str, message: &str) {
+        println!("{}, panics", source);
+
+        println!("generated tokens:");
+        for token in tokenise(source).unwrap() {
+            println!("\t{:?}", token);
+        }
+
+        panic!("{}", message)
+    }
+
+    fn match_tokens(source: &str, token_types: Vec<TokenType>) {
+        let tokens = tokenise(source).unwrap();
+
+        if tokens.len() != token_types.len() {
+            panic_source(
+                source,
+                format!(
+                    "incorrect number of tokens generated ({} vs {})",
+                    source.len(),
+                    token_types.len()
+                )
+                .as_str(),
+            )
+        }
+
+        for (current_token, matched_token_type) in tokens.iter().zip(token_types.iter()) {
+            if current_token.token_type != *matched_token_type {
+                panic_source(
+                    source,
+                    format!(
+                        "tokens do not match ({:?} vs {:?})",
+                        current_token.token_type, *matched_token_type
+                    )
+                    .as_str(),
+                )
+            }
+        }
+    }
+
+    #[test]
+    fn literals_tests() {
+        match_tokens("1", vec![TokenType::Integer(1)]);
+        match_tokens("-1", vec![TokenType::Integer(-1)]);
+        match_tokens("1.04", vec![TokenType::Float(1.04)]);
+        match_tokens("\"Hello\"", vec![TokenType::String("Hello".to_string())]);
+    }
+
+    #[test]
+    fn basic_expr_tests() {
+        match_tokens(
+            "(+ 1 2)",
+            vec![
+                TokenType::LBracket,
+                TokenType::Identifier("+".to_string()),
+                TokenType::Integer(1),
+                TokenType::Integer(2),
+                TokenType::RBracket,
+            ],
+        );
+
+        match_tokens(
+            "(+ 1 2)",
+            vec![
+                TokenType::LBracket,
+                TokenType::Identifier("+".to_string()),
+                TokenType::Integer(1),
+                TokenType::Integer(2),
+                TokenType::RBracket,
+            ],
+        );
+
+        match_tokens(
+            "(println \"Hello, World!\")",
+            vec![
+                TokenType::LBracket,
+                TokenType::Identifier("println".to_string()),
+                TokenType::String("Hello, World!".to_string()),
+                TokenType::RBracket,
+            ],
+        );
+    }
 }
