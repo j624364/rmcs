@@ -272,6 +272,8 @@ mod tests {
         match_tokens("\"\\\\\"", vec![TokenType::String("\\".to_string())]);
         match_tokens("\"\\\"\"", vec![TokenType::String("\"".to_string())]);
         match_tokens("\"\\\'\"", vec![TokenType::String("\'".to_string())]);
+
+        assert!(tokenise("\"\\x\"").is_err());
     }
 
     #[test]
