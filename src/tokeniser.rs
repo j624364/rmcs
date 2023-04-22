@@ -52,6 +52,10 @@ impl Token {
             col_no,
         }
     }
+
+    pub fn get_token_type(&self) -> &TokenType {
+        &self.token_type
+    }
 }
 
 // todo: make private
