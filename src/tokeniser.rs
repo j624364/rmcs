@@ -13,6 +13,18 @@ impl TokeniserError {
             col_no: tokeniser_state.col_no,
         }
     }
+
+    pub fn get_message(&self) -> &String {
+        &self.message
+    }
+
+    pub fn get_line_no(&self) -> usize {
+        self.line_no
+    }
+
+    pub fn get_col_no(&self) -> usize {
+        self.col_no
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
