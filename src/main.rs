@@ -1,7 +1,7 @@
-mod parser;
+mod tokeniser;
 
 fn _print_tokens(source: &str) {
-    let tokens = parser::tokenise(source).unwrap();
+    let tokens = tokeniser::tokenise(source).unwrap();
 
     for token in tokens {
         println!("{:?}", token);
