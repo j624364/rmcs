@@ -35,29 +35,29 @@ impl Node {
                 if self.children.is_empty() {
                     // just this one node
                     match token.get_token_type() {
-                        TokenType::Identifier(_identifier) => {
-                            // will require variables and scopes
-                            todo!()
+                        TokenType::Identifier(identifier) => {
+                            match identifier.as_str() {
+                                // should probably change how i do this
+                                "true" => Ok(Value::Boolean(true)),
+                                "false" => Ok(Value::Boolean(false)),
+                                _ => {
+                                    // will require variables and scopes
+                                    todo!()
+                                }
+                            }
                         }
-                        TokenType::Integer(integer) => {
-                            Ok(Value::Integer(*integer))
-                        }
-                        TokenType::Float(float) => {
-                            Ok(Value::Float(*float))
-                        }
-                        TokenType::String(string) => {
-                            Ok(Value::String(string.clone()))
-                        }
+                        TokenType::Integer(integer) => Ok(Value::Integer(*integer)),
+                        TokenType::Float(float) => Ok(Value::Float(*float)),
+                        TokenType::String(string) => Ok(Value::String(string.clone())),
                         TokenType::LBracket | TokenType::RBracket => {
                             unreachable!()
                         }
                     }
-                }
-                else {
+                } else {
                     // will require functions
                     todo!()
                 }
-            },
+            }
             None => {
                 if self.children.is_empty() {
                     // like the rust () for null
@@ -71,5 +71,29 @@ impl Node {
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::parser;
+    use crate::tokeniser;
+
+    fn eval(source: &str) -> Value {
+        parser::parse(tokeniser::tokenise(source).unwrap())
+            .unwrap()
+            .borrow_mut()
+            .evaluate()
+            .unwrap()
+    }
+
+    #[test]
+    fn basic_literals() {
+        assert_eq!(eval("true"), Value::Boolean(true));
+        assert_eq!(eval("false"), Value::Boolean(false));
+        assert_eq!(eval("1"), Value::Integer(1));
+        assert_eq!(eval("1.5"), Value::Float(1.5));
+        assert_eq!(eval("\"asdf\""), Value::String("asdf".to_string()));
     }
 }
