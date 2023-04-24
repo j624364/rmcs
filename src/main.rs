@@ -27,8 +27,7 @@ pub fn handle_cmd_options(cmd_options: CmdOptions) -> Result<(), io::Error> {
                         match parent_node.evaluate(&mut run_state) {
                             Ok(value) => {
                                 if cmd_options.should_print_res() {
-                                    // todo: use Display
-                                    println!("{:?}", value);
+                                    println!("{}", value);
                                 }
                             }
                             Err(error) => {
