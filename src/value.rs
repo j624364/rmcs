@@ -1,5 +1,6 @@
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub enum Value {
+    #[default]
     Null,
 
     Boolean(bool),
