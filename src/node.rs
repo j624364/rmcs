@@ -46,13 +46,13 @@ impl Node {
                                         Some(local) => Ok(local.get().clone()),
                                         None => {
                                             // generate an error
-                                            return Err(Error::new(
+                                            Err(Error::new(
                                                 format!(
                                                     "could not find identifier: \"{}\"",
                                                     identifier
                                                 ),
                                                 self.token.clone(),
-                                            ));
+                                            ))
                                         }
                                     }
                                 }
