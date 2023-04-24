@@ -2,12 +2,11 @@ use crate::error::Error;
 use crate::run_state::RunState;
 use crate::tokeniser::{Token, TokenType};
 use crate::value::Value;
-use std::cell::RefCell;
 
 #[derive(Debug)]
 pub struct Node {
     token: Option<Token>,
-    children: Vec<RefCell<Node>>,
+    children: Vec<Node>,
 }
 
 impl Node {
@@ -18,7 +17,7 @@ impl Node {
         }
     }
 
-    pub fn add_child(&mut self, child: RefCell<Node>) {
+    pub fn add_child(&mut self, child: Node) {
         self.children.push(child);
     }
 
@@ -26,11 +25,11 @@ impl Node {
         &self.token
     }
 
-    pub fn get_children(&self) -> &Vec<RefCell<Node>> {
+    pub fn get_children(&self) -> &Vec<Node> {
         &self.children
     }
 
-    pub fn evaluate(&mut self, run_state: &mut RunState) -> Result<Value, Error> {
+    pub fn evaluate(&self, run_state: &mut RunState) -> Result<Value, Error> {
         match &self.token {
             Some(token) => {
                 if self.children.is_empty() {
@@ -41,21 +40,13 @@ impl Node {
                                 // should probably change how i do this
                                 "true" => Ok(Value::Boolean(true)),
                                 "false" => Ok(Value::Boolean(false)),
-                                _ => {
-                                    match run_state.find_local(identifier) {
-                                        Some(local) => Ok(local.get().clone()),
-                                        None => {
-                                            // generate an error
-                                            Err(Error::new(
-                                                format!(
-                                                    "could not find identifier: \"{}\"",
-                                                    identifier
-                                                ),
-                                                self.token.clone(),
-                                            ))
-                                        }
-                                    }
-                                }
+                                _ => match run_state.find_local(identifier) {
+                                    Some(local) => Ok(local.get().clone()),
+                                    None => Err(Error::new(
+                                        format!("could not find identifier: \"{}\"", identifier),
+                                        self.token.clone(),
+                                    )),
+                                },
                             }
                         }
                         TokenType::Integer(integer) => Ok(Value::Integer(*integer)),
@@ -66,8 +57,36 @@ impl Node {
                         }
                     }
                 } else {
-                    // will require functions
-                    todo!()
+                    match token.get_token_type() {
+                        TokenType::Identifier(identifier) => {
+                            match run_state.find_local(identifier) {
+                                Some(local) => {
+                                    match local.get() {
+                                        Value::NativeFunction(func) => {
+                                            let mut args = Vec::with_capacity(self.children.len());
+                                            for child in &self.children {
+                                                args.push(child.evaluate(run_state)?);
+                                            }
+
+                                            func(args)
+                                        }
+                                        _ => {
+                                            // eventually return a list
+                                            todo!()
+                                        }
+                                    }
+                                }
+                                None => Err(Error::new(
+                                    format!("could not find identifier: \"{}\"", identifier),
+                                    self.token.clone(),
+                                )),
+                            }
+                        }
+                        _ => {
+                            // eventually return a list
+                            todo!()
+                        }
+                    }
                 }
             }
             None => {
@@ -75,16 +94,12 @@ impl Node {
                     // like the rust () for null
                     Ok(Value::Null)
                 } else if self.children.len() == 1 {
-                    self.children
-                        .first()
-                        .unwrap()
-                        .borrow_mut()
-                        .evaluate(run_state)
+                    self.children.first().unwrap().evaluate(run_state)
                 } else {
                     let mut last_value = Value::default();
 
                     for child in &self.children {
-                        last_value = child.borrow_mut().evaluate(run_state)?;
+                        last_value = child.evaluate(run_state)?;
                     }
 
                     Ok(last_value)
@@ -106,7 +121,6 @@ mod tests {
 
         parser::parse(tokeniser::tokenise(source).unwrap())
             .unwrap()
-            .borrow_mut()
             .evaluate(&mut run_state)
             .unwrap()
     }
@@ -132,5 +146,30 @@ mod tests {
         assert_eq!(eval("x", Some(run_state.clone())), value.clone());
         assert_eq!(eval("(x)", Some(run_state.clone())), value);
         assert_eq!(eval("((x))", Some(run_state)), value);
+    }
+
+    #[test]
+    fn basic_maths_eval_tests() {
+        // todo: add tests for floats
+
+        assert_eq!(eval("(+ 1 1)", None), Value::Integer(1 + 1));
+        assert_eq!(eval("(+ 1 2)", None), Value::Integer(1 + 2));
+        assert_eq!(eval("(+ 1 2 3)", None), Value::Integer(1 + 2 + 3));
+        assert_eq!(eval("(+ 1 (+ 2 3))", None), Value::Integer(1 + (2 + 3)));
+
+        assert_eq!(eval("(- 3 2)", None), Value::Integer(3 - 2));
+        assert_eq!(eval("(- 2 3)", None), Value::Integer(2 - 3));
+        assert_eq!(eval("(- 1 2 3)", None), Value::Integer(1 - 2 - 3));
+
+        assert_eq!(eval("(* 1 1)", None), Value::Integer(1 * 1));
+        assert_eq!(eval("(* 1 2)", None), Value::Integer(1 * 2));
+        assert_eq!(eval("(* 1 2 3)", None), Value::Integer(1 * 2 * 3));
+        assert_eq!(eval("(* 100 100)", None), Value::Integer(100 * 100));
+
+        // usually would have issues with floating point inaccuracy but as the same
+        // operations should be carried out here and in the code, it should all be good
+        assert_eq!(eval("(/ 3 2)", None), Value::Integer(3 / 2));
+        assert_eq!(eval("(/ 2 3)", None), Value::Integer(2 / 3));
+        assert_eq!(eval("(/ 1 2 3)", None), Value::Integer(1 / 2 / 3));
     }
 }

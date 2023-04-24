@@ -1,3 +1,4 @@
+use crate::std::add_std_lib;
 use crate::variable::Variable;
 use std::collections::{HashMap, VecDeque};
 
@@ -33,7 +34,7 @@ pub struct RunState {
 }
 
 impl RunState {
-    pub fn new() -> Self {
+    pub fn new_empty() -> Self {
         let mut output = Self {
             scopes: VecDeque::with_capacity(512),
         };
@@ -41,6 +42,12 @@ impl RunState {
         // make sure there is one global scope
         output.scopes.push_back(Scope::new());
 
+        output
+    }
+
+    pub fn new() -> Self {
+        let mut output = Self::new_empty();
+        add_std_lib(&mut output);
         output
     }
 

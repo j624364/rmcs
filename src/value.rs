@@ -1,3 +1,5 @@
+use crate::function::NativeFunction;
+
 #[derive(Debug, Clone, Default, PartialEq)]
 pub enum Value {
     #[default]
@@ -9,4 +11,5 @@ pub enum Value {
     String(String),
 
     List(Vec<Value>),
+    NativeFunction(NativeFunction),
 }

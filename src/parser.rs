@@ -1,6 +1,5 @@
 use crate::node::Node;
 use crate::tokeniser::{Token, TokenType};
-use std::cell::RefCell;
 use std::collections::VecDeque;
 
 #[derive(Debug)]
@@ -31,7 +30,7 @@ impl ParserState {
     }
 }
 
-fn parse_node(parser_state: &mut ParserState) -> Result<RefCell<Node>, ParserError> {
+fn parse_node(parser_state: &mut ParserState) -> Result<Node, ParserError> {
     // deal with node vertex
     let mut node = match parser_state.eat_token() {
         Some(node_token) => {
@@ -54,21 +53,21 @@ fn parse_node(parser_state: &mut ParserState) -> Result<RefCell<Node>, ParserErr
                     node.add_child(parse_node(parser_state)?);
                 }
                 TokenType::RBracket => {
-                    return Ok(RefCell::new(node));
+                    return Ok(node);
                 }
                 TokenType::Identifier(_)
                 | TokenType::Integer(_)
                 | TokenType::Float(_)
-                | TokenType::String(_) => node.add_child(RefCell::new(Node::new(Some(token)))),
+                | TokenType::String(_) => node.add_child(Node::new(Some(token))),
             },
             None => {
-                return Ok(RefCell::new(node));
+                return Ok(node);
             }
         }
     }
 }
 
-pub fn parse(tokens: Vec<Token>) -> Result<RefCell<Node>, ParserError> {
+pub fn parse(tokens: Vec<Token>) -> Result<Node, ParserError> {
     let mut parser_state = ParserState::new(tokens);
     parse_node(&mut parser_state)
 }
