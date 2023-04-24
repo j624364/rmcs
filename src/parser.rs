@@ -8,6 +8,16 @@ pub struct ParserError {
     token: Token,
 }
 
+impl ParserError {
+    pub fn get_message(&self) -> &String {
+        &self.message
+    }
+
+    pub fn get_token(&self) -> &Token {
+        &self.token
+    }
+}
+
 struct ParserState {
     index: usize,
     tokens: VecDeque<Token>,

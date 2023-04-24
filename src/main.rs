@@ -1,3 +1,4 @@
+mod cmd_options;
 mod error;
 mod function;
 mod node;
@@ -8,48 +9,71 @@ mod tokeniser;
 mod value;
 mod variable;
 
-fn _print_tokens(source: &str) {
-    let tokens = tokeniser::tokenise(source).unwrap();
+use crate::cmd_options::CmdOptions;
+use crate::run_state::RunState;
+use ::std::env;
+use ::std::io;
 
-    for token in tokens {
-        println!("{:?}", token);
-    }
+pub fn handle_cmd_options(cmd_options: CmdOptions) -> Result<(), io::Error> {
+    let code_sources = cmd_options.get_code_sources()?;
 
-    println!();
-}
+    let mut run_state = RunState::new();
 
-fn print_node(node: &node::Node, rec_level: usize) {
-    match node.get_token() {
-        Some(token) => {
-            for _ in 0..rec_level {
-                print!("\t");
+    for source in code_sources {
+        match tokeniser::tokenise(source.as_str()) {
+            Ok(tokens) => {
+                match parser::parse(tokens) {
+                    Ok(parent_node) => {
+                        match parent_node.evaluate(&mut run_state) {
+                            Ok(value) => {
+                                if cmd_options.should_print_res() {
+                                    // todo: use Display
+                                    println!("{:?}", value);
+                                }
+                            }
+                            Err(error) => {
+                                // todo: use Display
+                                println!("Runtime error: \"{:?}\"", error);
+                            }
+                        }
+                    }
+                    Err(parser_error) => {
+                        // todo: use Display for token
+                        println!(
+                            "Parser error: \"{}\" at token: {:?}",
+                            parser_error.get_message(),
+                            parser_error.get_token()
+                        );
+                    }
+                }
             }
-            println!("{:?}", token);
+            Err(tokeniser_error) => {
+                println!(
+                    "Tokeniser error: \"{}\" at {}:{}",
+                    tokeniser_error.get_message(),
+                    tokeniser_error.get_line_no(),
+                    tokeniser_error.get_col_no()
+                );
+            }
         }
-        None => {}
     }
 
-    for child in node.get_children() {
-        print_node(&child, rec_level + 1);
-    }
-}
-
-fn print_node_from_source(source: &str) {
-    let tokens = tokeniser::tokenise(source).unwrap();
-    match parser::parse(tokens) {
-        Ok(parent_node) => {
-            println!("{:?}", parent_node);
-            print_node(&parent_node, 0);
-            println!();
-        }
-        Err(error) => {
-            println!("{:?}", error);
-        }
-    }
+    Ok(())
 }
 
 fn main() {
-    print_node_from_source("+ 1 2");
-    print_node_from_source("(+ 1 2)");
-    print_node_from_source("(+ (- 3 2) 2)");
+    match CmdOptions::parse(env::args().collect()) {
+        Ok(cmd_options) => match handle_cmd_options(cmd_options) {
+            Ok(()) => {}
+            Err(error) => {
+                println!("Error: \"{}\"!", error);
+            }
+        },
+        Err(error_message) => {
+            println!(
+                "Error in parsing command line options: \"{}\"!",
+                error_message
+            );
+        }
+    }
 }
