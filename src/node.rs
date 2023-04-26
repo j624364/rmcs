@@ -70,39 +70,37 @@ impl Node {
                     match token.get_token_type() {
                         TokenType::Identifier(identifier) => {
                             match run_state.find_local(identifier) {
-                                Some(local) => {
-                                    match local.get() {
-                                        Value::NativeFunction(func) => {
-                                            let mut args = Vec::with_capacity(self.children.len());
-                                            for child in &self.children {
-                                                args.push(child.evaluate(run_state)?);
-                                            }
-
-                                            match func(args) {
-                                                Ok(res) => Ok(res),
-                                                Err(mut error) => {
-                                                    error.set_token(token.clone());
-                                                    Err(error)
-                                                }
-                                            }
+                                Some(local) => match local.get() {
+                                    Value::NativeFunction(func) => {
+                                        let mut args = Vec::with_capacity(self.children.len());
+                                        for child in &self.children {
+                                            args.push(child.evaluate(run_state)?);
                                         }
-                                        Value::NativeMacro(func) => func(run_state, self),
-                                        _ => {
-                                            // eventually return a list
-                                            todo!()
+
+                                        match func(args) {
+                                            Ok(res) => Ok(res),
+                                            Err(mut error) => {
+                                                error.set_token(token.clone());
+                                                Err(error)
+                                            }
                                         }
                                     }
-                                }
+                                    Value::NativeMacro(func) => func(run_state, self),
+                                    _ => Err(Error::new(
+                                        "must be a function or macro".to_string(),
+                                        self.token.clone(),
+                                    )),
+                                },
                                 None => Err(Error::new(
                                     format!("could not find identifier: \"{}\"", identifier),
                                     self.token.clone(),
                                 )),
                             }
                         }
-                        _ => {
-                            // eventually return a list
-                            todo!()
-                        }
+                        _ => Err(Error::new(
+                            "must be a function or macro".to_string(),
+                            self.token.clone(),
+                        )),
                     }
                 }
             }
@@ -228,6 +226,23 @@ mod tests {
         assert_eq!(
             eval("(set x 5) (+ x x)", Some(&mut run_state)),
             Value::Integer(5 + 5)
+        );
+    }
+
+    #[test]
+    fn variable_list_tests() {
+        assert_eq!(eval("(list)", None), Value::List(Vec::new()));
+
+        assert_eq!(eval("(list 5)", None), Value::List(vec![Value::Integer(5)]));
+
+        assert_eq!(
+            eval("(list 5 1)", None),
+            Value::List(vec![Value::Integer(5), Value::Integer(1)])
+        );
+
+        assert_eq!(
+            eval("(list 5 \"asdf\")", None),
+            Value::List(vec![Value::Integer(5), Value::String("asdf".to_string())])
         );
     }
 }

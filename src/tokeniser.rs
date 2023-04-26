@@ -62,7 +62,11 @@ impl Token {
 
 impl fmt::Display for Token {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?} at {}:{}", self.token_type, self.line_no, self.col_no)
+        write!(
+            f,
+            "{:?} at {}:{}",
+            self.token_type, self.line_no, self.col_no
+        )
     }
 }
 
