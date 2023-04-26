@@ -1,5 +1,13 @@
 [workspace]
-members = [ "ryol" ]
+members = [
+    ".",
+    "ryol"
+]
+
+default-members = [
+    ".",
+    "ryol"
+]
 
 [package]
 name = "rmcs"
