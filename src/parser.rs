@@ -19,20 +19,14 @@ impl ParserError {
 }
 
 struct ParserState {
-    index: usize,
     tokens: VecDeque<Token>,
 }
 
 impl ParserState {
     pub fn new(tokens: Vec<Token>) -> Self {
         Self {
-            index: 0,
             tokens: VecDeque::from(tokens),
         }
-    }
-
-    pub fn has_token(&self) -> bool {
-        self.index < self.tokens.len()
     }
 
     pub fn eat_token(&mut self) -> Option<Token> {
