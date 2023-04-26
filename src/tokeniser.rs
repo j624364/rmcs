@@ -1,3 +1,5 @@
+use std::fmt;
+
 #[derive(Debug)]
 pub struct TokeniserError {
     message: String,
@@ -55,6 +57,12 @@ impl Token {
 
     pub fn get_token_type(&self) -> &TokenType {
         &self.token_type
+    }
+}
+
+impl fmt::Display for Token {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?} at {}:{}", self.token_type, self.line_no, self.col_no)
     }
 }
 

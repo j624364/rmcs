@@ -32,14 +32,14 @@ pub fn handle_cmd_options(cmd_options: CmdOptions) -> Result<(), io::Error> {
                             }
                             Err(error) => {
                                 // todo: use Display
-                                println!("Runtime error: \"{:?}\"", error);
+                                println!("{}", error);
                             }
                         }
                     }
                     Err(parser_error) => {
                         // todo: use Display for token
                         println!(
-                            "Parser error: \"{}\" at token: {:?}",
+                            "Parser error: \"{}\" at token: [{}]",
                             parser_error.get_message(),
                             parser_error.get_token()
                         );

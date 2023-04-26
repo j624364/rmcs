@@ -1,4 +1,5 @@
 use crate::tokeniser::Token;
+use std::fmt;
 
 #[derive(Debug)]
 pub struct Error {
@@ -13,5 +14,18 @@ impl Error {
 
     pub fn set_token(&mut self, token: Token) {
         self.token = Some(token)
+    }
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let token_output = match &self.token {
+            Some(token) => {
+                format!(" {}", token)
+            }
+            None => String::new(),
+        };
+
+        write!(f, "Runtime Error: \"{}\"{}", self.message, token_output)
     }
 }
