@@ -29,6 +29,18 @@ impl TokeniserError {
     }
 }
 
+impl fmt::Display for TokeniserError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "\"{}\" at {}:{}",
+            self.get_message(),
+            self.get_line_no(),
+            self.get_col_no()
+        )
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenType {
     Identifier(String),

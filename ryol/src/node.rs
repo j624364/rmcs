@@ -127,31 +127,19 @@ impl Node {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser;
-    use crate::tokeniser;
+    use crate::eval;
     use crate::variable::Variable;
-
-    fn eval_res(source: &str, run_state_option: Option<&mut RunState>) -> Result<Value, Error> {
-        let mut default_run_state = RunState::new();
-
-        let mut run_state = run_state_option.unwrap_or(&mut default_run_state);
-
-        parser::parse(tokeniser::tokenise(source).unwrap())
-            .unwrap()
-            .evaluate(&mut run_state)
-    }
-
-    fn eval(source: &str, run_state_option: Option<&mut RunState>) -> Value {
-        eval_res(source, run_state_option).unwrap()
-    }
 
     #[test]
     fn basic_literals_tests() {
-        assert_eq!(eval("true", None), Value::Boolean(true));
-        assert_eq!(eval("false", None), Value::Boolean(false));
-        assert_eq!(eval("1", None), Value::Integer(1));
-        assert_eq!(eval("1.5", None), Value::Float(1.5));
-        assert_eq!(eval("\"asdf\"", None), Value::String("asdf".to_string()));
+        assert_eq!(eval("true", None).unwrap(), Value::Boolean(true));
+        assert_eq!(eval("false", None).unwrap(), Value::Boolean(false));
+        assert_eq!(eval("1", None).unwrap(), Value::Integer(1));
+        assert_eq!(eval("1.5", None).unwrap(), Value::Float(1.5));
+        assert_eq!(
+            eval("\"asdf\"", None).unwrap(),
+            Value::String("asdf".to_string())
+        );
         // todo: make work later
         // assert_eq!(eval("()", None), Value::Null);
     }
@@ -163,52 +151,58 @@ mod tests {
         let value = Value::Integer(5);
 
         scope.set_local("x", Variable::new(value.clone()));
-        assert_eq!(eval("x", Some(&mut run_state)), value.clone());
-        assert_eq!(eval("(x)", Some(&mut run_state)), value);
-        assert_eq!(eval("((x))", Some(&mut run_state)), value);
+        assert_eq!(eval("x", Some(&mut run_state)).unwrap(), value.clone());
+        assert_eq!(eval("(x)", Some(&mut run_state)).unwrap(), value);
+        assert_eq!(eval("((x))", Some(&mut run_state)).unwrap(), value);
     }
 
     #[test]
     fn basic_maths_eval_tests() {
         // todo: add tests for floats
 
-        assert_eq!(eval("(+ 1 1)", None), Value::Integer(1 + 1));
-        assert_eq!(eval("(+ 1 2)", None), Value::Integer(1 + 2));
-        assert_eq!(eval("(+ 1 2 3)", None), Value::Integer(1 + 2 + 3));
-        assert_eq!(eval("(+ 1 (+ 2 3))", None), Value::Integer(1 + (2 + 3)));
+        assert_eq!(eval("(+ 1 1)", None).unwrap(), Value::Integer(1 + 1));
+        assert_eq!(eval("(+ 1 2)", None).unwrap(), Value::Integer(1 + 2));
+        assert_eq!(eval("(+ 1 2 3)", None).unwrap(), Value::Integer(1 + 2 + 3));
+        assert_eq!(
+            eval("(+ 1 (+ 2 3))", None).unwrap(),
+            Value::Integer(1 + (2 + 3))
+        );
 
-        assert_eq!(eval("(- 3 2)", None), Value::Integer(3 - 2));
-        assert_eq!(eval("(- 2 3)", None), Value::Integer(2 - 3));
-        assert_eq!(eval("(- 1 2 3)", None), Value::Integer(1 - 2 - 3));
+        assert_eq!(eval("(- 3 2)", None).unwrap(), Value::Integer(3 - 2));
+        assert_eq!(eval("(- 2 3)", None).unwrap(), Value::Integer(2 - 3));
+        assert_eq!(eval("(- 1 2 3)", None).unwrap(), Value::Integer(1 - 2 - 3));
 
-        assert_eq!(eval("(* 1 1)", None), Value::Integer(1 * 1));
-        assert_eq!(eval("(* 1 2)", None), Value::Integer(1 * 2));
-        assert_eq!(eval("(* 1 2 3)", None), Value::Integer(1 * 2 * 3));
-        assert_eq!(eval("(* 100 100)", None), Value::Integer(100 * 100));
+        assert_eq!(eval("(* 1 1)", None).unwrap(), Value::Integer(1 * 1));
+        assert_eq!(eval("(* 1 2)", None).unwrap(), Value::Integer(1 * 2));
+        assert_eq!(eval("(* 1 2 3)", None).unwrap(), Value::Integer(1 * 2 * 3));
+        assert_eq!(
+            eval("(* 100 100)", None).unwrap(),
+            Value::Integer(100 * 100)
+        );
 
         // usually would have issues with floating point inaccuracy but as the same
         // operations should be carried out here and in the code, it should all be good
-        assert_eq!(eval("(/ 3 2)", None), Value::Integer(3 / 2));
-        assert_eq!(eval("(/ 2 3)", None), Value::Integer(2 / 3));
-        assert_eq!(eval("(/ 1 2 3)", None), Value::Integer(1 / 2 / 3));
+        assert_eq!(eval("(/ 3 2)", None).unwrap(), Value::Integer(3 / 2));
+        assert_eq!(eval("(/ 2 3)", None).unwrap(), Value::Integer(2 / 3));
+        assert_eq!(eval("(/ 1 2 3)", None).unwrap(), Value::Integer(1 / 2 / 3));
     }
 
     #[test]
     fn variable_set_tests() {
         // syntax
-        assert!(eval_res("(set)", None).is_err());
-        assert!(eval_res("(set x)", None).is_err());
-        assert!(eval_res("(set x 1 y)", None).is_err());
-        assert!(eval_res("(set x 1)", None).is_ok());
-        assert!(eval_res("set x 1 y 2", None).is_ok());
-        assert!(eval_res("(set x 1 y 2)", None).is_ok());
+        assert!(eval("(set)", None).is_err());
+        assert!(eval("(set x)", None).is_err());
+        assert!(eval("(set x 1 y)", None).is_err());
+        assert!(eval("(set x 1)", None).is_ok());
+        assert!(eval("set x 1 y 2", None).is_ok());
+        assert!(eval("(set x 1 y 2)", None).is_ok());
 
         let mut run_state = RunState::new();
         let identifier = "x".to_string();
         let value = Value::Integer(5);
 
         // should return null when setting value
-        assert_eq!(eval("set x 5", Some(&mut run_state)), Value::Null);
+        assert_eq!(eval("set x 5", Some(&mut run_state)).unwrap(), Value::Null);
 
         // should exist
         assert!(run_state.get_local_scope_mut().local_exists(&identifier));
@@ -224,24 +218,27 @@ mod tests {
         );
 
         assert_eq!(
-            eval("(set x 5) (+ x x)", Some(&mut run_state)),
+            eval("(set x 5) (+ x x)", Some(&mut run_state)).unwrap(),
             Value::Integer(5 + 5)
         );
     }
 
     #[test]
     fn variable_list_tests() {
-        assert_eq!(eval("(list)", None), Value::List(Vec::new()));
-
-        assert_eq!(eval("(list 5)", None), Value::List(vec![Value::Integer(5)]));
+        assert_eq!(eval("(list)", None).unwrap(), Value::List(Vec::new()));
 
         assert_eq!(
-            eval("(list 5 1)", None),
+            eval("(list 5)", None).unwrap(),
+            Value::List(vec![Value::Integer(5)])
+        );
+
+        assert_eq!(
+            eval("(list 5 1)", None).unwrap(),
             Value::List(vec![Value::Integer(5), Value::Integer(1)])
         );
 
         assert_eq!(
-            eval("(list 5 \"asdf\")", None),
+            eval("(list 5 \"asdf\")", None).unwrap(),
             Value::List(vec![Value::Integer(5), Value::String("asdf".to_string())])
         );
     }

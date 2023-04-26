@@ -1,6 +1,7 @@
 use crate::node::Node;
 use crate::tokeniser::{Token, TokenType};
 use std::collections::VecDeque;
+use std::fmt;
 
 #[derive(Debug)]
 pub struct ParserError {
@@ -15,6 +16,12 @@ impl ParserError {
 
     pub fn get_token(&self) -> &Token {
         &self.token
+    }
+}
+
+impl fmt::Display for ParserError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "\"{}\" at [{}]", self.get_message(), self.get_token())
     }
 }
 

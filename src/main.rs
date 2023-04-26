@@ -1,11 +1,9 @@
 mod cmd_options;
 
 use crate::cmd_options::CmdOptions;
-use ryol::run_state::RunState;
-use ryol::parser;
-use ryol::tokeniser;
 use ::std::env;
 use ::std::io;
+use ryol::run_state::RunState;
 
 pub fn handle_cmd_options(cmd_options: CmdOptions) -> Result<(), io::Error> {
     let code_sources = cmd_options.get_code_sources()?;
@@ -13,39 +11,14 @@ pub fn handle_cmd_options(cmd_options: CmdOptions) -> Result<(), io::Error> {
     let mut run_state = RunState::new();
 
     for source in code_sources {
-        match tokeniser::tokenise(source.as_str()) {
-            Ok(tokens) => {
-                match parser::parse(tokens) {
-                    Ok(parent_node) => {
-                        match parent_node.evaluate(&mut run_state) {
-                            Ok(value) => {
-                                if cmd_options.should_print_res() {
-                                    println!("{}", value);
-                                }
-                            }
-                            Err(error) => {
-                                // todo: use Display
-                                println!("{}", error);
-                            }
-                        }
-                    }
-                    Err(parser_error) => {
-                        // todo: use Display for token
-                        println!(
-                            "Parser error: \"{}\" at token: [{}]",
-                            parser_error.get_message(),
-                            parser_error.get_token()
-                        );
-                    }
+        match ryol::eval(&source, Some(&mut run_state)) {
+            Ok(value) => {
+                if cmd_options.should_print_res() {
+                    println!("{}", value);
                 }
             }
-            Err(tokeniser_error) => {
-                println!(
-                    "Tokeniser error: \"{}\" at {}:{}",
-                    tokeniser_error.get_message(),
-                    tokeniser_error.get_line_no(),
-                    tokeniser_error.get_col_no()
-                );
+            Err(error) => {
+                println!("{}", error);
             }
         }
     }
