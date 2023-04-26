@@ -22,7 +22,7 @@ impl Variable {
         }
     }
 
-    pub fn _set(&mut self, value: Value) {
+    pub fn set(&mut self, value: Value) {
         assert!(!self.is_const);
         self.value = value;
     }

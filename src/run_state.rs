@@ -18,8 +18,13 @@ impl Scope {
         self.locals.contains_key(identifier)
     }
 
+    // todo: make into Option<&Variable>
     pub fn get_local(&self, identifier: &String) -> Option<Variable> {
         Some(self.locals.get(identifier)?.clone())
+    }
+
+    pub fn get_local_mut(&mut self, identifier: &String) -> Option<&mut Variable> {
+        self.locals.get_mut(identifier)
     }
 
     pub fn set_local(&mut self, identifier: &str, variable: Variable) {
@@ -63,5 +68,9 @@ impl RunState {
 
     pub fn get_global_scope_mut(&mut self) -> &mut Scope {
         self.scopes.front_mut().unwrap()
+    }
+
+    pub fn get_local_scope_mut(&mut self) -> &mut Scope {
+        self.scopes.back_mut().unwrap()
     }
 }

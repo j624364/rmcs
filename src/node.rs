@@ -41,7 +41,11 @@ impl Node {
                                 "true" => Ok(Value::Boolean(true)),
                                 "false" => Ok(Value::Boolean(false)),
                                 _ => match run_state.find_local(identifier) {
-                                    Some(local) => Ok(local.get().clone()),
+                                    Some(local) => match local.get() {
+                                        Value::NativeFunction(func) => func(Vec::new()),
+                                        Value::NativeMacro(func) => func(run_state, &Vec::new()),
+                                        _ => Ok(local.get().clone()),
+                                    },
                                     None => Err(Error::new(
                                         format!("could not find identifier: \"{}\"", identifier),
                                         self.token.clone(),
@@ -70,6 +74,7 @@ impl Node {
 
                                             func(args)
                                         }
+                                        Value::NativeMacro(func) => func(run_state, &self.children),
                                         _ => {
                                             // eventually return a list
                                             todo!()
@@ -116,13 +121,18 @@ mod tests {
     use crate::tokeniser;
     use crate::variable::Variable;
 
-    fn eval(source: &str, run_state_option: Option<RunState>) -> Value {
-        let mut run_state = run_state_option.unwrap_or(RunState::new());
+    fn eval_res(source: &str, run_state_option: Option<&mut RunState>) -> Result<Value, Error> {
+        let mut default_run_state = RunState::new();
+
+        let mut run_state = run_state_option.unwrap_or(&mut default_run_state);
 
         parser::parse(tokeniser::tokenise(source).unwrap())
             .unwrap()
             .evaluate(&mut run_state)
-            .unwrap()
+    }
+
+    fn eval(source: &str, run_state_option: Option<&mut RunState>) -> Value {
+        eval_res(source, run_state_option).unwrap()
     }
 
     #[test]
@@ -143,9 +153,9 @@ mod tests {
         let value = Value::Integer(5);
 
         scope.set_local("x", Variable::new(value.clone()));
-        assert_eq!(eval("x", Some(run_state.clone())), value.clone());
-        assert_eq!(eval("(x)", Some(run_state.clone())), value);
-        assert_eq!(eval("((x))", Some(run_state)), value);
+        assert_eq!(eval("x", Some(&mut run_state)), value.clone());
+        assert_eq!(eval("(x)", Some(&mut run_state)), value);
+        assert_eq!(eval("((x))", Some(&mut run_state)), value);
     }
 
     #[test]
@@ -171,5 +181,36 @@ mod tests {
         assert_eq!(eval("(/ 3 2)", None), Value::Integer(3 / 2));
         assert_eq!(eval("(/ 2 3)", None), Value::Integer(2 / 3));
         assert_eq!(eval("(/ 1 2 3)", None), Value::Integer(1 / 2 / 3));
+    }
+
+    #[test]
+    fn variable_set_tests() {
+        // syntax
+        assert!(eval_res("(set)", None).is_err());
+        assert!(eval_res("(set x)", None).is_err());
+        assert!(eval_res("(set x 1 y)", None).is_err());
+        assert!(eval_res("(set x 1)", None).is_ok());
+        assert!(eval_res("set x 1 y 2", None).is_ok());
+        assert!(eval_res("(set x 1 y 2)", None).is_ok());
+
+        let mut run_state = RunState::new();
+        let identifier = "x".to_string();
+        let value = Value::Integer(5);
+
+        // should return null when setting value
+        assert_eq!(eval("set x 5", Some(&mut run_state)), Value::Null);
+
+        // should exist
+        assert!(run_state.get_local_scope_mut().local_exists(&identifier));
+
+        // should have the correct value
+        assert_eq!(
+            *run_state
+                .get_local_scope_mut()
+                .get_local(&identifier)
+                .unwrap()
+                .get(),
+            value
+        );
     }
 }
