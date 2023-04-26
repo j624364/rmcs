@@ -82,3 +82,46 @@ fn std_basic_set(run_state: &mut RunState, node: &Node) -> Result<Value, Error> 
 
     Ok(Value::default())
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::eval;
+    use crate::value::Value;
+    use crate::run_state::RunState;
+
+    #[test]
+    fn variable_set_tests() {
+        // syntax
+        assert!(eval("(set)", None).is_err());
+        assert!(eval("(set x)", None).is_err());
+        assert!(eval("(set x 1 y)", None).is_err());
+        assert!(eval("(set x 1)", None).is_ok());
+        assert!(eval("set x 1 y 2", None).is_ok());
+        assert!(eval("(set x 1 y 2)", None).is_ok());
+
+        let mut run_state = RunState::new();
+        let identifier = "x".to_string();
+        let value = Value::Integer(5);
+
+        // should return null when setting value
+        assert_eq!(eval("set x 5", Some(&mut run_state)).unwrap(), Value::Null);
+
+        // should exist
+        assert!(run_state.get_local_scope_mut().local_exists(&identifier));
+
+        // should have the correct value
+        assert_eq!(
+            *run_state
+                .get_local_scope_mut()
+                .get_local(&identifier)
+                .unwrap()
+                .get(),
+            value
+        );
+
+        assert_eq!(
+            eval("(set x 5) (+ x x)", Some(&mut run_state)).unwrap(),
+            Value::Integer(5 + 5)
+        );
+    }
+}
