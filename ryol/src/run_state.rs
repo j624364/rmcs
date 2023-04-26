@@ -1,5 +1,9 @@
+use crate::parser;
 use crate::std::add_std_lib;
+use crate::tokeniser;
+use crate::value::Value;
 use crate::variable::Variable;
+use crate::EvalError;
 use std::collections::{HashMap, VecDeque};
 
 #[derive(Debug, Clone)]
@@ -72,5 +76,18 @@ impl RunState {
 
     pub fn get_local_scope_mut(&mut self) -> &mut Scope {
         self.scopes.back_mut().unwrap()
+    }
+
+    pub fn eval(&mut self, source: &str) -> Result<Value, EvalError> {
+        match tokeniser::tokenise(source) {
+            Ok(tokens) => match parser::parse(tokens) {
+                Ok(parent_node) => match parent_node.evaluate(self) {
+                    Ok(value) => Ok(value),
+                    Err(runtime_error) => Err(EvalError::RuntimeError(runtime_error)),
+                },
+                Err(parser_error) => Err(EvalError::ParserError(parser_error)),
+            },
+            Err(tokeniser_error) => Err(EvalError::TokeniserError(tokeniser_error)),
+        }
     }
 }

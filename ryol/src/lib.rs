@@ -31,19 +31,7 @@ impl fmt::Display for EvalError {
     }
 }
 
-pub fn eval(source: &str, run_state_option: Option<&mut RunState>) -> Result<Value, EvalError> {
-    let mut default_run_state = RunState::new();
-
-    let mut run_state = run_state_option.unwrap_or(&mut default_run_state);
-
-    match tokeniser::tokenise(source) {
-        Ok(tokens) => match parser::parse(tokens) {
-            Ok(parent_node) => match parent_node.evaluate(&mut run_state) {
-                Ok(value) => Ok(value),
-                Err(runtime_error) => Err(EvalError::RuntimeError(runtime_error)),
-            },
-            Err(parser_error) => Err(EvalError::ParserError(parser_error)),
-        },
-        Err(tokeniser_error) => Err(EvalError::TokeniserError(tokeniser_error)),
-    }
+pub fn eval(source: &str) -> Result<Value, EvalError> {
+    let mut run_state = RunState::new();
+    run_state.eval(source)
 }

@@ -11,7 +11,7 @@ pub fn handle_cmd_options(cmd_options: CmdOptions) -> Result<(), io::Error> {
     let mut run_state = RunState::new();
 
     for source in code_sources {
-        match ryol::eval(&source, Some(&mut run_state)) {
+        match run_state.eval(&source) {
             Ok(value) => {
                 if cmd_options.should_print_res() {
                     println!("{}", value);

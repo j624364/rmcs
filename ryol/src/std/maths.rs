@@ -117,9 +117,7 @@ fn std_maths_div(args: Vec<Value>) -> Result<Value, Error> {
             match &arg {
                 Value::Integer(x) => Ok(Value::Integer(-x)),
                 Value::Float(x) => Ok(Value::Float(-x)),
-                _ => {
-                    Err(get_non_num_type_error("-", arg))
-                }
+                _ => Err(get_non_num_type_error("-", arg)),
             }
         }
         _ => {
@@ -152,30 +150,24 @@ mod tests {
     fn basic_maths_eval_tests() {
         // todo: add tests for floats
 
-        assert_eq!(eval("(+ 1 1)", None).unwrap(), Value::Integer(1 + 1));
-        assert_eq!(eval("(+ 1 2)", None).unwrap(), Value::Integer(1 + 2));
-        assert_eq!(eval("(+ 1 2 3)", None).unwrap(), Value::Integer(1 + 2 + 3));
-        assert_eq!(
-            eval("(+ 1 (+ 2 3))", None).unwrap(),
-            Value::Integer(1 + (2 + 3))
-        );
+        assert_eq!(eval("(+ 1 1)").unwrap(), Value::Integer(1 + 1));
+        assert_eq!(eval("(+ 1 2)").unwrap(), Value::Integer(1 + 2));
+        assert_eq!(eval("(+ 1 2 3)").unwrap(), Value::Integer(1 + 2 + 3));
+        assert_eq!(eval("(+ 1 (+ 2 3))").unwrap(), Value::Integer(1 + (2 + 3)));
 
-        assert_eq!(eval("(- 3 2)", None).unwrap(), Value::Integer(3 - 2));
-        assert_eq!(eval("(- 2 3)", None).unwrap(), Value::Integer(2 - 3));
-        assert_eq!(eval("(- 1 2 3)", None).unwrap(), Value::Integer(1 - 2 - 3));
+        assert_eq!(eval("(- 3 2)").unwrap(), Value::Integer(3 - 2));
+        assert_eq!(eval("(- 2 3)").unwrap(), Value::Integer(2 - 3));
+        assert_eq!(eval("(- 1 2 3)").unwrap(), Value::Integer(1 - 2 - 3));
 
-        assert_eq!(eval("(* 1 1)", None).unwrap(), Value::Integer(1 * 1));
-        assert_eq!(eval("(* 1 2)", None).unwrap(), Value::Integer(1 * 2));
-        assert_eq!(eval("(* 1 2 3)", None).unwrap(), Value::Integer(1 * 2 * 3));
-        assert_eq!(
-            eval("(* 100 100)", None).unwrap(),
-            Value::Integer(100 * 100)
-        );
+        assert_eq!(eval("(* 1 1)").unwrap(), Value::Integer(1 * 1));
+        assert_eq!(eval("(* 1 2)").unwrap(), Value::Integer(1 * 2));
+        assert_eq!(eval("(* 1 2 3)").unwrap(), Value::Integer(1 * 2 * 3));
+        assert_eq!(eval("(* 100 100)").unwrap(), Value::Integer(100 * 100));
 
         // usually would have issues with floating point inaccuracy but as the same
         // operations should be carried out here and in the code, it should all be good
-        assert_eq!(eval("(/ 3 2)", None).unwrap(), Value::Integer(3 / 2));
-        assert_eq!(eval("(/ 2 3)", None).unwrap(), Value::Integer(2 / 3));
-        assert_eq!(eval("(/ 1 2 3)", None).unwrap(), Value::Integer(1 / 2 / 3));
+        assert_eq!(eval("(/ 3 2)").unwrap(), Value::Integer(3 / 2));
+        assert_eq!(eval("(/ 2 3)").unwrap(), Value::Integer(2 / 3));
+        assert_eq!(eval("(/ 1 2 3)").unwrap(), Value::Integer(1 / 2 / 3));
     }
 }
