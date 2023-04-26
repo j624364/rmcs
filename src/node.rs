@@ -212,5 +212,7 @@ mod tests {
                 .get(),
             value
         );
+
+        assert_eq!(eval("(set x 5) (+ x x)", Some(&mut run_state)), Value::Integer(5 + 5));
     }
 }
