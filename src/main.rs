@@ -1,16 +1,9 @@
 mod cmd_options;
-mod error;
-mod function;
-mod node;
-mod parser;
-mod run_state;
-mod std;
-mod tokeniser;
-mod value;
-mod variable;
 
 use crate::cmd_options::CmdOptions;
-use crate::run_state::RunState;
+use ryol::run_state::RunState;
+use ryol::parser;
+use ryol::tokeniser;
 use ::std::env;
 use ::std::io;
 

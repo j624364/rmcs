@@ -5,3 +5,10 @@ version = 3
 [[package]]
 name = "rmcs"
 version = "0.1.0"
+dependencies = [
+ "ryol",
+]
+
+[[package]]
+name = "ryol"
+version = "0.1.0"
