@@ -15,8 +15,7 @@ fn std_list_list(args: Vec<Value>) -> Result<Value, Error> {
 
 #[cfg(test)]
 mod tests {
-    use crate::eval;
-    use crate::value::Value;
+    use crate::prelude::*;
 
     #[test]
     fn variable_list_tests() {

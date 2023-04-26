@@ -143,8 +143,7 @@ fn std_maths_div(args: Vec<Value>) -> Result<Value, Error> {
 
 #[cfg(test)]
 mod tests {
-    use crate::eval;
-    use crate::value::Value;
+    use crate::prelude::*;
 
     #[test]
     fn addition_tests() {

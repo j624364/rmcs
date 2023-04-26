@@ -85,9 +85,7 @@ fn std_basic_set(run_state: &mut RunState, node: &Node) -> Result<Value, Error> 
 
 #[cfg(test)]
 mod tests {
-    use crate::eval;
-    use crate::run_state::RunState;
-    use crate::value::Value;
+    use crate::prelude::*;
 
     #[test]
     fn variable_set_tests() {

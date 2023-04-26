@@ -35,3 +35,13 @@ pub fn eval(source: &str) -> Result<Value, EvalError> {
     let mut run_state = RunState::new();
     run_state.eval(source)
 }
+
+pub mod prelude {
+    pub use crate::error::Error;
+    pub use crate::eval;
+    pub use crate::function::{NativeFunction, NativeMacro};
+    pub use crate::node::Node;
+    pub use crate::run_state::RunState;
+    pub use crate::value::Value;
+    pub use crate::variable::Variable;
+}

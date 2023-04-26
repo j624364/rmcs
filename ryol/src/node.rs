@@ -126,9 +126,7 @@ impl Node {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::eval;
-    use crate::variable::Variable;
+    use crate::prelude::*;
 
     #[test]
     fn basic_literals_tests() {
