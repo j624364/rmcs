@@ -43,7 +43,7 @@ impl Node {
                                 _ => match run_state.find_local(identifier) {
                                     Some(local) => match local.get() {
                                         Value::NativeFunction(func) => func(Vec::new()),
-                                        Value::NativeMacro(func) => func(run_state, &Vec::new()),
+                                        Value::NativeMacro(func) => func(run_state, self),
                                         _ => Ok(local.get().clone()),
                                     },
                                     None => Err(Error::new(
@@ -74,7 +74,7 @@ impl Node {
 
                                             func(args)
                                         }
-                                        Value::NativeMacro(func) => func(run_state, &self.children),
+                                        Value::NativeMacro(func) => func(run_state, self),
                                         _ => {
                                             // eventually return a list
                                             todo!()

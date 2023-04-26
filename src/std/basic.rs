@@ -25,7 +25,9 @@ fn get_identifier(node: &Node) -> Result<&String, Error> {
     }
 }
 
-fn std_basic_set(run_state: &mut RunState, args: &Vec<Node>) -> Result<Value, Error> {
+fn std_basic_set(run_state: &mut RunState, node: &Node) -> Result<Value, Error> {
+    let args = node.get_children();
+
     // can probably get rid of this
     if args.len() < 2 {
         return Err(Error::new(
@@ -72,7 +74,7 @@ fn std_basic_set(run_state: &mut RunState, args: &Vec<Node>) -> Result<Value, Er
                         "identifier: \"{}\" requires corresponding value",
                         identifier
                     ),
-                    None,
+                    node.get_token().clone(),
                 ));
             }
         }
