@@ -60,9 +60,7 @@ fn std_maths_sub(args: Vec<Value>) -> Result<Value, Error> {
             match &arg {
                 Value::Integer(x) => Ok(Value::Integer(-x)),
                 Value::Float(x) => Ok(Value::Float(-x)),
-                _ => {
-                    return Err(get_non_num_type_error("-", arg));
-                }
+                _ => Err(get_non_num_type_error("-", arg)),
             }
         }
         _ => {
