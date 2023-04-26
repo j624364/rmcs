@@ -118,7 +118,7 @@ fn std_maths_div(args: Vec<Value>) -> Result<Value, Error> {
                 Value::Integer(x) => Ok(Value::Integer(-x)),
                 Value::Float(x) => Ok(Value::Float(-x)),
                 _ => {
-                    return Err(get_non_num_type_error("-", arg));
+                    Err(get_non_num_type_error("-", arg))
                 }
             }
         }
