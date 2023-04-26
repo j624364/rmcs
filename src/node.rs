@@ -42,7 +42,13 @@ impl Node {
                                 "false" => Ok(Value::Boolean(false)),
                                 _ => match run_state.find_local(identifier) {
                                     Some(local) => match local.get() {
-                                        Value::NativeFunction(func) => func(Vec::new()),
+                                        Value::NativeFunction(func) => match func(Vec::new()) {
+                                            Ok(res) => Ok(res),
+                                            Err(mut error) => {
+                                                error.set_token(token.clone());
+                                                Err(error)
+                                            }
+                                        },
                                         Value::NativeMacro(func) => func(run_state, self),
                                         _ => Ok(local.get().clone()),
                                     },
@@ -72,7 +78,13 @@ impl Node {
                                                 args.push(child.evaluate(run_state)?);
                                             }
 
-                                            func(args)
+                                            match func(args) {
+                                                Ok(res) => Ok(res),
+                                                Err(mut error) => {
+                                                    error.set_token(token.clone());
+                                                    Err(error)
+                                                }
+                                            }
                                         }
                                         Value::NativeMacro(func) => func(run_state, self),
                                         _ => {
@@ -213,6 +225,9 @@ mod tests {
             value
         );
 
-        assert_eq!(eval("(set x 5) (+ x x)", Some(&mut run_state)), Value::Integer(5 + 5));
+        assert_eq!(
+            eval("(set x 5) (+ x x)", Some(&mut run_state)),
+            Value::Integer(5 + 5)
+        );
     }
 }
