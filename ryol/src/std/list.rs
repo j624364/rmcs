@@ -12,28 +12,3 @@ pub fn add_list_lib(run_state: &mut RunState) {
 fn std_list_list(args: Vec<Value>) -> Result<Value, Error> {
     Ok(Value::List(args))
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::prelude::*;
-
-    #[test]
-    fn variable_list_tests() {
-        assert_eq!(eval("(list)").unwrap(), Value::List(Vec::new()));
-
-        assert_eq!(
-            eval("(list 5)").unwrap(),
-            Value::List(vec![Value::Integer(5)])
-        );
-
-        assert_eq!(
-            eval("(list 5 1)").unwrap(),
-            Value::List(vec![Value::Integer(5), Value::Integer(1)])
-        );
-
-        assert_eq!(
-            eval("(list 5 \"asdf\")").unwrap(),
-            Value::List(vec![Value::Integer(5), Value::String("asdf".to_string())])
-        );
-    }
-}

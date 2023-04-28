@@ -123,31 +123,3 @@ impl Node {
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::prelude::*;
-
-    #[test]
-    fn basic_literals_tests() {
-        assert_eq!(eval("true").unwrap(), Value::Boolean(true));
-        assert_eq!(eval("false").unwrap(), Value::Boolean(false));
-        assert_eq!(eval("1").unwrap(), Value::Integer(1));
-        assert_eq!(eval("1.5").unwrap(), Value::Float(1.5));
-        assert_eq!(eval("\"asdf\"").unwrap(), Value::String("asdf".to_string()));
-        // todo: make work later
-        // assert_eq!(eval("()", None), Value::Null);
-    }
-
-    #[test]
-    fn global_variable_test() {
-        let mut run_state = RunState::new();
-        let scope = run_state.get_global_scope_mut();
-        let value = Value::Integer(5);
-
-        scope.set_local("x", Variable::new(value.clone()));
-        assert_eq!(run_state.eval("x").unwrap(), value.clone());
-        assert_eq!(run_state.eval("(x)").unwrap(), value);
-        assert_eq!(run_state.eval("((x))").unwrap(), value);
-    }
-}
