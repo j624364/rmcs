@@ -1,15 +1,11 @@
-use crate::error::Error;
-use crate::node::Node;
-use crate::run_state::RunState;
-use crate::tokeniser::TokenType;
-use crate::value::Value;
-use crate::variable::Variable;
+use crate::prelude::*;
 
 pub fn add_basic_lib(run_state: &mut RunState) {
     let scope = run_state.get_global_scope_mut();
 
     // variables
     scope.set_local("set", Variable::new(Value::NativeMacro(std_basic_set)));
+    scope.set_local("if", Variable::new(Value::NativeMacro(std_basic_if)));
 }
 
 fn get_identifier(node: &Node) -> Result<&String, Error> {
@@ -76,6 +72,69 @@ fn std_basic_set(run_state: &mut RunState, node: &Node) -> Result<Value, Error> 
                     ),
                     node.get_token().clone(),
                 ));
+            }
+        }
+    }
+
+    Ok(Value::default())
+}
+
+fn std_basic_if(run_state: &mut RunState, node: &Node) -> Result<Value, Error> {
+    let args = node.get_children();
+
+    if args.len() < 2 {
+        return Err(Error::new(
+            "requires at least two arguments".to_string(),
+            node.get_token().clone(),
+        ));
+    }
+
+    #[derive(Debug)]
+    enum IfMode {
+        Normal,
+        Condition,
+        Body,
+        Skip,
+    }
+
+    let mut if_mode = IfMode::Condition;
+    for node in args.iter() {
+        println!("{:?} : {:?}", if_mode, node.get_token());
+        match if_mode {
+            IfMode::Normal => {
+                match get_identifier(node) {
+                    Ok(identifier) => {
+                        match identifier.as_str() {
+                            "elseif" | "elif" => {
+                                if_mode = IfMode::Condition;
+                            }
+                            "else" => {
+                                if_mode = IfMode::Body;
+                            }
+                            _ => {
+                                // must be an expression
+                                return node.evaluate(run_state);
+                            }
+                        }
+                    }
+                    _ => {
+                        // must be the body of the if block
+                        return node.evaluate(run_state);
+                    }
+                }
+            }
+            IfMode::Condition => {
+                if node.evaluate(run_state)? == Value::Boolean(true) {
+                    if_mode = IfMode::Body;
+                } else {
+                    if_mode = IfMode::Skip;
+                }
+            }
+            IfMode::Skip => {
+                if_mode = IfMode::Normal;
+            }
+            IfMode::Body => {
+                return node.evaluate(run_state);
             }
         }
     }

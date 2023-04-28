@@ -42,6 +42,7 @@ pub mod prelude {
     pub use crate::function::{NativeFunction, NativeMacro};
     pub use crate::node::Node;
     pub use crate::run_state::RunState;
+    pub use crate::tokeniser::{Token, TokenType};
     pub use crate::value::Value;
     pub use crate::variable::Variable;
 }

@@ -58,3 +58,68 @@ fn variable_set_tests() {
         Value::Integer(5 + 5)
     );
 }
+
+#[test]
+fn if_tests() {
+    assert!(eval("(if)").is_err());
+    assert!(eval("(if true)").is_err());
+    assert!(eval("(if false)").is_err());
+
+    assert_eq!(eval("(if false 5)").unwrap(), Value::Null);
+    assert_eq!(eval("(if true 5)").unwrap(), Value::Integer(5));
+
+    assert_eq!(eval("(if true 5 6)").unwrap(), Value::Integer(5));
+    assert_eq!(eval("(if false 5 6)").unwrap(), Value::Integer(6));
+    assert_eq!(eval("(if true 5 else 6)").unwrap(), Value::Integer(5));
+    assert_eq!(eval("(if false 5 else 6)").unwrap(), Value::Integer(6));
+
+    assert_eq!(
+        eval("(if false 5 elif false 6 else 7)").unwrap(),
+        Value::Integer(7)
+    );
+    assert_eq!(
+        eval("(if false 5 elif true 6 else 7)").unwrap(),
+        Value::Integer(6)
+    );
+    assert_eq!(
+        eval("(if true 5 elif false 6 else 7)").unwrap(),
+        Value::Integer(5)
+    );
+    assert_eq!(
+        eval("(if true 5 elif true 6 else 7)").unwrap(),
+        Value::Integer(5)
+    );
+
+    assert_eq!(
+        eval("(if false 5 elif false 6 elif false 7 else 8)").unwrap(),
+        Value::Integer(8)
+    );
+    assert_eq!(
+        eval("(if false 5 elif false 6 elif true 7 else 8)").unwrap(),
+        Value::Integer(7)
+    );
+    assert_eq!(
+        eval("(if false 5 elif true 6 elif false 7 else 8)").unwrap(),
+        Value::Integer(6)
+    );
+    assert_eq!(
+        eval("(if false 5 elif true 6 elif true 7 else 8)").unwrap(),
+        Value::Integer(6)
+    );
+    assert_eq!(
+        eval("(if true 5 elif false 6 elif false 7 else 8)").unwrap(),
+        Value::Integer(5)
+    );
+    assert_eq!(
+        eval("(if true 5 elif false 6 elif true 7 else 8)").unwrap(),
+        Value::Integer(5)
+    );
+    assert_eq!(
+        eval("(if true 5 elif true 6 elif false 7 else 8)").unwrap(),
+        Value::Integer(5)
+    );
+    assert_eq!(
+        eval("(if true 5 elif true 6 elif true 7 else 8)").unwrap(),
+        Value::Integer(5)
+    );
+}
