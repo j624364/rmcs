@@ -1,12 +1,9 @@
 use crate::prelude::*;
 
 pub fn add_basic_lib(run_state: &mut RunState) {
-    let scope = run_state.get_global_scope_mut();
-
-    // variables
-    scope.set_local("set", Variable::new(Value::NativeMacro(std_basic_set)));
-    scope.set_local("if", Variable::new(Value::NativeMacro(std_basic_if)));
-    scope.set_local("times", Variable::new(Value::NativeMacro(std_basic_times)));
+    run_state.expose_macro("set", std_basic_set);
+    run_state.expose_macro("if", std_basic_if);
+    run_state.expose_macro("times", std_basic_times);
 }
 
 fn get_identifier(node: &Node) -> Result<&String, Error> {

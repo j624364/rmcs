@@ -1,3 +1,4 @@
+use crate::function::{NativeFunction, NativeMacro};
 use crate::parser;
 use crate::std::add_std_lib;
 use crate::tokeniser;
@@ -76,6 +77,16 @@ impl RunState {
 
     pub fn get_local_scope_mut(&mut self) -> &mut Scope {
         self.scopes.back_mut().unwrap()
+    }
+
+    pub fn expose_function(&mut self, name: &str, function: NativeFunction) {
+        self.get_global_scope_mut()
+            .set_local(name, Variable::new(Value::NativeFunction(function)));
+    }
+
+    pub fn expose_macro(&mut self, name: &str, r#macro: NativeMacro) {
+        self.get_global_scope_mut()
+            .set_local(name, Variable::new(Value::NativeMacro(r#macro)));
     }
 
     pub fn eval(&mut self, source: &str) -> Result<Value, EvalError> {
