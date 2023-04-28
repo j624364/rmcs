@@ -7,8 +7,8 @@ fn basic_literals_tests() {
     assert_eq!(eval("1").unwrap(), Value::Integer(1));
     assert_eq!(eval("1.5").unwrap(), Value::Float(1.5));
     assert_eq!(eval("\"asdf\"").unwrap(), Value::String("asdf".to_string()));
-    // todo: make work later
-    // assert_eq!(eval("()", None), Value::Null);
+    assert_eq!(eval("()").unwrap(), Value::Null);
+    assert_eq!(eval("(())").unwrap(), Value::Null);
 }
 
 #[test]

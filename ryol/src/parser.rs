@@ -49,7 +49,11 @@ fn parse_node(parser_state: &mut ParserState) -> Result<Node, ParserError> {
                 let mut node = Node::new(None);
                 node.add_child(parse_node(parser_state)?);
                 node
-            } else {
+            }
+            else if *node_token.get_token_type() == TokenType::RBracket {
+                Node::new(None)
+            }
+            else {
                 Node::new(Some(node_token))
             }
         }
