@@ -114,13 +114,20 @@ fn std_basic_if(run_state: &mut RunState, node: &Node) -> Result<Value, Error> {
                     }
                 }
             }
-            IfMode::Condition => {
-                if node.evaluate(run_state)? == Value::Boolean(true) {
+            IfMode::Condition => match node.evaluate(run_state)? {
+                Value::Boolean(true) => {
                     if_mode = IfMode::Body;
-                } else {
+                }
+                Value::Boolean(false) => {
                     if_mode = IfMode::Skip;
                 }
-            }
+                _ => {
+                    return Err(Error::new(
+                        "condition must be a boolean".to_string(),
+                        node.get_token().clone(),
+                    ));
+                }
+            },
             IfMode::Skip => {
                 if_mode = IfMode::Normal;
             }

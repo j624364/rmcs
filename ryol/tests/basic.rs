@@ -62,6 +62,8 @@ fn if_tests() {
     assert!(eval("(if)").is_err());
     assert!(eval("(if true)").is_err());
     assert!(eval("(if false)").is_err());
+    assert!(eval("(if 5)").is_err());
+    assert!(eval("(if 5 5)").is_err());
 
     assert_eq!(eval("(if false 5)").unwrap(), Value::Null);
     assert_eq!(eval("(if true 5)").unwrap(), Value::Integer(5));
