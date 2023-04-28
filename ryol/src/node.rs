@@ -41,7 +41,7 @@ impl Node {
                                 "true" => Ok(Value::Boolean(true)),
                                 "false" => Ok(Value::Boolean(false)),
                                 _ => match run_state.find_local(identifier) {
-                                    Some(local) => match local.get() {
+                                    Some(local) => match local {
                                         Value::NativeFunction(func) => match func(Vec::new()) {
                                             Ok(res) => Ok(res),
                                             Err(mut error) => {
@@ -50,7 +50,7 @@ impl Node {
                                             }
                                         },
                                         Value::NativeMacro(func) => func(run_state, self),
-                                        _ => Ok(local.get().clone()),
+                                        _ => Ok(local.clone()),
                                     },
                                     None => Err(Error::new(
                                         format!("could not find identifier: \"{}\"", identifier),
@@ -70,7 +70,7 @@ impl Node {
                     match token.get_token_type() {
                         TokenType::Identifier(identifier) => {
                             match run_state.find_local(identifier) {
-                                Some(local) => match local.get() {
+                                Some(local) => match local.clone() {
                                     Value::NativeFunction(func) => {
                                         let mut args = Vec::with_capacity(self.children.len());
                                         for child in &self.children {

@@ -1,16 +1,18 @@
 use crate::error::Error;
 use crate::prelude::*;
 
-pub fn add_maths_lib(run_state: &mut RunState) {
+pub fn add_maths_lib(run_state: &mut RunState) -> Result<(), Error> {
     // main operators
-    run_state.expose_function("+", std_maths_add);
-    run_state.expose_function("-", std_maths_sub);
-    run_state.expose_function("*", std_maths_mlt);
-    run_state.expose_function("/", std_maths_div);
+    run_state.expose_function("+", std_maths_add)?;
+    run_state.expose_function("-", std_maths_sub)?;
+    run_state.expose_function("*", std_maths_mlt)?;
+    run_state.expose_function("/", std_maths_div)?;
 
     // aliases for the operators
-    run_state.expose_function("×", std_maths_mlt);
-    run_state.expose_function("÷", std_maths_div);
+    run_state.expose_function("×", std_maths_mlt)?;
+    run_state.expose_function("÷", std_maths_div)?;
+
+    Ok(())
 }
 
 pub fn get_non_num_type_error(function_name: &str, arg: &Value) -> Error {

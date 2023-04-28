@@ -1,3 +1,4 @@
+use crate::error::Error;
 use crate::function::{NativeFunction, NativeMacro};
 use crate::parser;
 use crate::std::add_std_lib;
@@ -24,17 +25,30 @@ impl Scope {
     }
 
     // todo: make into Option<&Variable>
-    pub fn get_local(&self, identifier: &String) -> Option<Variable> {
-        Some(self.locals.get(identifier)?.clone())
+    pub fn get_local(&self, identifier: &String) -> Option<&Value> {
+        Some(self.locals.get(identifier)?.get())
     }
 
     pub fn get_local_mut(&mut self, identifier: &String) -> Option<&mut Variable> {
         self.locals.get_mut(identifier)
     }
 
-    pub fn set_local(&mut self, identifier: &str, variable: Variable) {
-        // ignore what was already there and just update value
-        self.locals.insert(identifier.to_string(), variable);
+    pub fn set_local(&mut self, identifier: &String, value: Value) -> Result<(), Error> {
+        if let Some(local) = self.locals.get_mut(identifier) {
+            if local.is_const() {
+                Err(Error::new(
+                    format!("variable: \"{}\" is const", identifier),
+                    None,
+                ))
+            } else {
+                local.set(value);
+                Ok(())
+            }
+        } else {
+            self.locals
+                .insert(identifier.to_string(), Variable::new(value));
+            Ok(())
+        }
     }
 }
 
@@ -57,11 +71,14 @@ impl RunState {
 
     pub fn new() -> Self {
         let mut output = Self::new_empty();
-        add_std_lib(&mut output);
+
+        // should never have an error
+        add_std_lib(&mut output).unwrap();
+
         output
     }
 
-    pub fn find_local(&self, identifier: &String) -> Option<Variable> {
+    pub fn find_local(&self, identifier: &String) -> Option<&Value> {
         for scope in self.scopes.iter().rev() {
             if scope.local_exists(identifier) {
                 return scope.get_local(identifier);
@@ -79,14 +96,14 @@ impl RunState {
         self.scopes.back_mut().unwrap()
     }
 
-    pub fn expose_function(&mut self, name: &str, function: NativeFunction) {
+    pub fn expose_function(&mut self, name: &str, function: NativeFunction) -> Result<(), Error> {
         self.get_global_scope_mut()
-            .set_local(name, Variable::new(Value::NativeFunction(function)));
+            .set_local(&name.to_string(), Value::NativeFunction(function))
     }
 
-    pub fn expose_macro(&mut self, name: &str, r#macro: NativeMacro) {
+    pub fn expose_macro(&mut self, name: &str, r#macro: NativeMacro) -> Result<(), Error> {
         self.get_global_scope_mut()
-            .set_local(name, Variable::new(Value::NativeMacro(r#macro)));
+            .set_local(&name.to_string(), Value::NativeMacro(r#macro))
     }
 
     pub fn eval(&mut self, source: &str) -> Result<Value, EvalError> {

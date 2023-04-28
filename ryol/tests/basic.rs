@@ -17,7 +17,7 @@ fn global_variable_test() {
     let scope = run_state.get_global_scope_mut();
     let value = Value::Integer(5);
 
-    scope.set_local("x", Variable::new(value.clone()));
+    scope.set_local(&"x".to_string(), value.clone()).unwrap();
     assert_eq!(run_state.eval("x").unwrap(), value.clone());
     assert_eq!(run_state.eval("(x)").unwrap(), value);
     assert_eq!(run_state.eval("((x))").unwrap(), value);
@@ -48,8 +48,7 @@ fn variable_set_tests() {
         *run_state
             .get_local_scope_mut()
             .get_local(&identifier)
-            .unwrap()
-            .get(),
+            .unwrap(),
         value
     );
 

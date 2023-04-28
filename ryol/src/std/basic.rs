@@ -1,9 +1,11 @@
 use crate::prelude::*;
 
-pub fn add_basic_lib(run_state: &mut RunState) {
-    run_state.expose_macro("set", std_basic_set);
-    run_state.expose_macro("if", std_basic_if);
-    run_state.expose_macro("times", std_basic_times);
+pub fn add_basic_lib(run_state: &mut RunState) -> Result<(), Error> {
+    run_state.expose_macro("set", std_basic_set)?;
+    run_state.expose_macro("if", std_basic_if)?;
+    run_state.expose_macro("times", std_basic_times)?;
+
+    Ok(())
 }
 
 fn get_identifier(node: &Node) -> Result<&String, Error> {
@@ -42,23 +44,17 @@ fn std_basic_set(run_state: &mut RunState, node: &Node) -> Result<Value, Error> 
                 // can not put outside the loop due to multiple borrows
                 let scope = run_state.get_local_scope_mut();
 
-                // update variable if already exists, otherwise create
-                // todo?: could move this into set_local
-                match scope.get_local_mut(identifier) {
-                    Some(variable) => {
-                        if variable.is_const() {
-                            let token = value_node.get_token().clone();
-
-                            return Err(Error::new(
-                                format!("variable: \"{}\" is const", identifier),
-                                token,
-                            ));
-                        }
-
-                        variable.set(value);
+                match scope.set_local(identifier, value) {
+                    Ok(()) => {
                     }
-                    None => {
-                        scope.set_local(identifier.as_str(), Variable::new(value));
+                    Err(mut error) => {
+                        match node.get_token().clone() {
+                            Some(token) => {
+                                error.set_token(token);
+                                return Err(error);
+                            }
+                            None => {}
+                        }
                     }
                 }
             }
