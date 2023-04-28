@@ -6,6 +6,7 @@ pub fn add_basic_lib(run_state: &mut RunState) {
     // variables
     scope.set_local("set", Variable::new(Value::NativeMacro(std_basic_set)));
     scope.set_local("if", Variable::new(Value::NativeMacro(std_basic_if)));
+    scope.set_local("times", Variable::new(Value::NativeMacro(std_basic_times)));
 }
 
 fn get_identifier(node: &Node) -> Result<&String, Error> {
@@ -136,6 +137,34 @@ fn std_basic_if(run_state: &mut RunState, node: &Node) -> Result<Value, Error> {
             IfMode::Body => {
                 return node.evaluate(run_state);
             }
+        }
+    }
+
+    Ok(Value::default())
+}
+
+fn std_basic_times(run_state: &mut RunState, node: &Node) -> Result<Value, Error> {
+    let args = node.get_children();
+
+    if args.len() != 2 {
+        return Err(Error::new(
+            "takes two arguments".to_string(),
+            node.get_token().clone(),
+        ));
+    }
+
+    let count_value = args.first().unwrap().evaluate(run_state)?;
+    match count_value {
+        Value::Integer(count) => {
+            for _ in 0..count {
+                args.last().unwrap().evaluate(run_state)?;
+            }
+        }
+        _ => {
+            return Err(Error::new(
+                format!("count must be an integer, recieved: {:?}", count_value),
+                node.get_token().clone(),
+            ));
         }
     }
 

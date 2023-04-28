@@ -123,3 +123,14 @@ fn if_tests() {
         Value::Integer(5)
     );
 }
+
+#[test]
+fn times_tests() {
+    let source = r#"
+        (set x 0)
+        (times 5 (set x (+ x 1)))
+        x
+    "#;
+
+    assert_eq!(eval(source).unwrap(), Value::Integer(5));
+}
