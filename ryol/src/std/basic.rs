@@ -45,17 +45,14 @@ fn std_basic_set(run_state: &mut RunState, node: &Node) -> Result<Value, Error> 
                 let scope = run_state.get_local_scope_mut();
 
                 match scope.set_local(identifier, value) {
-                    Ok(()) => {
-                    }
-                    Err(mut error) => {
-                        match node.get_token().clone() {
-                            Some(token) => {
-                                error.set_token(token);
-                                return Err(error);
-                            }
-                            None => {}
+                    Ok(()) => {}
+                    Err(mut error) => match node.get_token().clone() {
+                        Some(token) => {
+                            error.set_token(token);
+                            return Err(error);
                         }
-                    }
+                        None => {}
+                    },
                 }
             }
             None => {

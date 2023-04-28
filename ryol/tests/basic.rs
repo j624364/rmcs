@@ -14,10 +14,9 @@ fn basic_literals_tests() {
 #[test]
 fn global_variable_test() {
     let mut run_state = RunState::new();
-    let scope = run_state.get_global_scope_mut();
     let value = Value::Integer(5);
 
-    scope.set_local(&"x".to_string(), value.clone()).unwrap();
+    run_state.expose("x", value.clone()).unwrap();
     assert_eq!(run_state.eval("x").unwrap(), value.clone());
     assert_eq!(run_state.eval("(x)").unwrap(), value);
     assert_eq!(run_state.eval("((x))").unwrap(), value);

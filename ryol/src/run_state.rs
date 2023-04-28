@@ -96,14 +96,17 @@ impl RunState {
         self.scopes.back_mut().unwrap()
     }
 
-    pub fn expose_function(&mut self, name: &str, function: NativeFunction) -> Result<(), Error> {
+    pub fn expose(&mut self, name: &str, value: Value) -> Result<(), Error> {
         self.get_global_scope_mut()
-            .set_local(&name.to_string(), Value::NativeFunction(function))
+            .set_local(&name.to_string(), value)
+    }
+
+    pub fn expose_function(&mut self, name: &str, function: NativeFunction) -> Result<(), Error> {
+        self.expose(name, Value::NativeFunction(function))
     }
 
     pub fn expose_macro(&mut self, name: &str, r#macro: NativeMacro) -> Result<(), Error> {
-        self.get_global_scope_mut()
-            .set_local(&name.to_string(), Value::NativeMacro(r#macro))
+        self.expose(name, Value::NativeMacro(r#macro))
     }
 
     pub fn eval(&mut self, source: &str) -> Result<Value, EvalError> {
