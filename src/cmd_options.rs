@@ -1,6 +1,3 @@
-use std::fs;
-use std::io;
-
 pub type CmdOptionsErrorMessage = String;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -65,16 +62,8 @@ impl CmdOptions {
         self.print_res
     }
 
-    pub fn get_code_sources(&self) -> Result<Vec<String>, io::Error> {
-        let mut code_sources = Vec::with_capacity(self.code_sources.len());
-        for code_source in &self.code_sources {
-            code_sources.push(match code_source {
-                CodeSource::File(path) => fs::read_to_string(path)?,
-                CodeSource::String(string) => string.clone(),
-            });
-        }
-
-        Ok(code_sources)
+    pub fn get_code_sources(&self) -> &Vec<CodeSource> {
+        &self.code_sources
     }
 }
 
