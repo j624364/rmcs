@@ -33,6 +33,21 @@ impl Scope {
         self.locals.get_mut(identifier)
     }
 
+    pub fn set_const(&mut self, identifier: &String, value: Value) -> Result<(), Error> {
+        if self.locals.get_mut(identifier).is_some() {
+            Err(Error::new(
+                format!(
+                    "can not set const: \"{}\" as it is already defined",
+                    identifier
+                ),
+                None,
+            ))
+        } else {
+            self.locals
+                .insert(identifier.to_string(), Variable::new(value));
+            Ok(())
+        }
+    }
     pub fn set_local(&mut self, identifier: &String, value: Value) -> Result<(), Error> {
         if let Some(local) = self.locals.get_mut(identifier) {
             if local.is_const() {

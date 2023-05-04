@@ -1,6 +1,7 @@
 use crate::prelude::*;
 
 pub fn add_basic_lib(run_state: &mut RunState) -> Result<(), Error> {
+    run_state.expose_macro("const", std_basic_const)?;
     run_state.expose_macro("set", std_basic_set)?;
     run_state.expose_macro("if", std_basic_if)?;
     run_state.expose_macro("times", std_basic_times)?;
@@ -21,7 +22,7 @@ fn get_identifier(node: &Node) -> Result<&String, Error> {
     }
 }
 
-fn std_basic_set(run_state: &mut RunState, node: &Node) -> Result<Value, Error> {
+fn set_local(run_state: &mut RunState, node: &Node, is_const: bool) -> Result<(), Error> {
     let args = node.get_children();
 
     // can probably get rid of this
@@ -44,10 +45,19 @@ fn std_basic_set(run_state: &mut RunState, node: &Node) -> Result<Value, Error> 
                 // can not put outside the loop due to multiple borrows
                 let scope = run_state.get_local_scope_mut();
 
-                if let Err(mut error) = scope.set_local(identifier, value) {
-                    if let Some(token) = node.get_token().clone() {
-                        error.set_token(token);
-                        return Err(error);
+                if is_const {
+                    if let Err(mut error) = scope.set_const(identifier, value) {
+                        if let Some(token) = node.get_token().clone() {
+                            error.set_token(token);
+                            return Err(error);
+                        }
+                    }
+                } else {
+                    if let Err(mut error) = scope.set_local(identifier, value) {
+                        if let Some(token) = node.get_token().clone() {
+                            error.set_token(token);
+                            return Err(error);
+                        }
                     }
                 }
             }
@@ -62,6 +72,20 @@ fn std_basic_set(run_state: &mut RunState, node: &Node) -> Result<Value, Error> 
             }
         }
     }
+
+    Ok(())
+}
+
+fn std_basic_const(run_state: &mut RunState, node: &Node) -> Result<Value, Error> {
+    let is_const = true;
+    set_local(run_state, node, is_const)?;
+
+    Ok(Value::default())
+}
+
+fn std_basic_set(run_state: &mut RunState, node: &Node) -> Result<Value, Error> {
+    let is_const = false;
+    set_local(run_state, node, is_const)?;
 
     Ok(Value::default())
 }

@@ -12,6 +12,40 @@ fn basic_literals_tests() {
 }
 
 #[test]
+fn const_tests() {
+    assert!(eval("(const)").is_err());
+    assert!(eval("(const x)").is_err());
+    assert!(eval("(const x 1 y)").is_err());
+    assert!(eval("(const x 1)").is_ok());
+    assert!(eval("const x 1 y 2").is_ok());
+    assert!(eval("(const x 1 y 2)").is_ok());
+
+    let mut run_state = RunState::new();
+    let identifier = "x".to_string();
+    let value = Value::Integer(5);
+
+    // should return null when setting value
+    assert_eq!(run_state.eval("(const x 5)").unwrap(), Value::Null);
+
+    // should exist
+    assert!(run_state.get_local_scope_mut().local_exists(&identifier));
+
+    // should have the correct value
+    assert_eq!(
+        *run_state
+            .get_local_scope_mut()
+            .get_local(&identifier)
+            .unwrap(),
+        value
+    );
+
+    // should not be able to set it twice
+    assert!(run_state.eval("(const x 6)").is_err());
+
+    assert_eq!(eval("(const x 5) (+ x x)").unwrap(), Value::Integer(5 + 5));
+}
+
+#[test]
 fn global_variable_test() {
     let mut run_state = RunState::new();
     let value = Value::Integer(5);
@@ -51,10 +85,7 @@ fn variable_set_tests() {
         value
     );
 
-    assert_eq!(
-        run_state.eval("(set x 5) (+ x x)").unwrap(),
-        Value::Integer(5 + 5)
-    );
+    assert_eq!(eval("(set x 5) (+ x x)").unwrap(), Value::Integer(5 + 5));
 }
 
 #[test]
