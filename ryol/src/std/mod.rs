@@ -2,6 +2,7 @@ pub mod basic;
 pub mod list;
 pub mod maths;
 pub mod print;
+pub mod string;
 pub mod throw;
 
 use crate::prelude::*;
@@ -12,6 +13,7 @@ pub fn add_std_lib(run_state: &mut RunState) -> Result<(), Error> {
     maths::add_maths_lib(run_state)?;
     print::add_print_lib(run_state)?;
     throw::add_throw_lib(run_state)?;
+    string::add_string_lib(run_state)?;
 
     Ok(())
 }
