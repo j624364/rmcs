@@ -97,7 +97,14 @@ impl fmt::Display for Value {
             Value::Null => "()".to_string(),
             Value::Boolean(boolean) => format!("{}", boolean),
             Value::Integer(integer) => format!("{}", integer),
-            Value::Float(float) => format!("{}", float),
+            Value::Float(float) => {
+                // ensure always has 1 dp of precision
+                if *float % 1.0 == 0.0 {
+                    format!("{:.1}", float)
+                } else {
+                    format!("{}", float)
+                }
+            }
             Value::String(string) => string.clone(),
             Value::List(list) => list_to_string(list)?,
             Value::NativeFunction(native_function) => {
