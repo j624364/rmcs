@@ -16,7 +16,7 @@ pub fn format_string(args: &Vec<Value>) -> Result<String, Error> {
             Ok(()) => {}
             Err(error) => {
                 return Err(Error::new(
-                    format!("could not create error message: {}", error),
+                    format!("could not create format string due to error: {}", error),
                     None,
                 ));
             }
