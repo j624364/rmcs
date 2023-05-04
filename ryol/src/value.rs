@@ -83,7 +83,7 @@ pub fn list_to_string(list: &Vec<Value>) -> Result<String, fmt::Error> {
         write!(&mut output, "{}", element)?;
 
         if i + 1 < list.len() {
-            write!(&mut output, ", ")?;
+            write!(&mut output, " ")?;
         }
     }
     write!(&mut output, ")")?;
