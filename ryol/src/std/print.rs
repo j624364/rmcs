@@ -10,9 +10,14 @@ pub fn add_print_lib(run_state: &mut RunState) -> Result<(), Error> {
 }
 
 pub fn std_print_print(args: Vec<Value>) -> Result<Value, Error> {
-    for arg in args {
-        print!("{}", arg);
-    }
+    let output = crate::std::string::format_string(&args)?;
+    print!("{}", output);
+
+    // this is probably more efficient but i want to be sure
+    // that the output is identical to format
+    // for arg in args {
+    //     print!("{}", arg);
+    // }
 
     Ok(Value::default())
 }
