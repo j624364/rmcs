@@ -1,7 +1,7 @@
 use crate::value::Value;
 
 // todo: wrap value with a Rc
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Variable {
     value: Value,
     is_const: bool,

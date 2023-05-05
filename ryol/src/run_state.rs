@@ -2,6 +2,7 @@ use crate::error::Error;
 use crate::function::{NativeFunction, NativeMacro};
 use crate::parser;
 use crate::std::add_std_lib;
+use crate::structure::StructureTemplate;
 use crate::tokeniser;
 use crate::value::Value;
 use crate::variable::Variable;
@@ -11,12 +12,14 @@ use std::collections::{HashMap, VecDeque};
 #[derive(Debug, Clone)]
 pub struct Scope {
     locals: HashMap<String, Variable>,
+    structure_templates: HashMap<String, StructureTemplate>,
 }
 
 impl Scope {
     pub fn new() -> Self {
         Self {
             locals: HashMap::new(),
+            structure_templates: HashMap::new(),
         }
     }
 
@@ -48,6 +51,7 @@ impl Scope {
             Ok(())
         }
     }
+
     pub fn set_local(&mut self, identifier: &String, value: Value) -> Result<(), Error> {
         if let Some(local) = self.locals.get_mut(identifier) {
             if local.is_const() {
@@ -64,6 +68,23 @@ impl Scope {
                 .insert(identifier.to_string(), Variable::new(value));
             Ok(())
         }
+    }
+
+    pub fn set_structure_template(
+        &mut self,
+        identifier: &String,
+        structure_template: StructureTemplate,
+    ) {
+        self.structure_templates
+            .insert(identifier.clone(), structure_template);
+    }
+
+    pub fn structure_template_exists(&self, identifier: &String) -> bool {
+        self.structure_templates.contains_key(identifier)
+    }
+
+    pub fn get_structure_template(&self, identifier: &String) -> Option<&StructureTemplate> {
+        self.structure_templates.get(identifier)
     }
 }
 
@@ -101,6 +122,16 @@ impl RunState {
         }
 
         return None;
+    }
+
+    pub fn find_structure_template(&self, identifier: &String) -> Option<&StructureTemplate> {
+        for scope in self.scopes.iter().rev() {
+            if scope.structure_template_exists(identifier) {
+                return scope.get_structure_template(identifier);
+            }
+        }
+
+        None
     }
 
     pub fn get_global_scope_mut(&mut self) -> &mut Scope {

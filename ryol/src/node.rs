@@ -1,5 +1,6 @@
 use crate::error::Error;
 use crate::run_state::RunState;
+use crate::structure::StructureInstance;
 use crate::tokeniser::{Token, TokenType};
 use crate::value::Value;
 
@@ -40,23 +41,35 @@ impl Node {
                                 // should probably change how i do this
                                 "true" => Ok(Value::Boolean(true)),
                                 "false" => Ok(Value::Boolean(false)),
-                                _ => match run_state.find_local(identifier) {
-                                    Some(local) => match local {
-                                        Value::NativeFunction(func) => match func(Vec::new()) {
-                                            Ok(res) => Ok(res),
-                                            Err(mut error) => {
-                                                error.set_token(token.clone());
-                                                Err(error)
-                                            }
-                                        },
-                                        Value::NativeMacro(func) => func(run_state, self),
-                                        _ => Ok(local.clone()),
-                                    },
-                                    None => Err(Error::new(
-                                        format!("could not find identifier: \"{}\"", identifier),
-                                        self.token.clone(),
-                                    )),
-                                },
+                                _ => {
+                                    if let Some(structure_template) =
+                                        run_state.find_structure_template(identifier)
+                                    {
+                                        Ok(Value::Structure(StructureInstance::from_template(
+                                            structure_template,
+                                        )))
+                                    } else if let Some(local) = run_state.find_local(identifier) {
+                                        match local {
+                                            Value::NativeFunction(func) => match func(Vec::new()) {
+                                                Ok(res) => Ok(res),
+                                                Err(mut error) => {
+                                                    error.set_token(token.clone());
+                                                    Err(error)
+                                                }
+                                            },
+                                            Value::NativeMacro(func) => func(run_state, self),
+                                            _ => Ok(local.clone()),
+                                        }
+                                    } else {
+                                        Err(Error::new(
+                                            format!(
+                                                "could not find identifier: \"{}\"",
+                                                identifier
+                                            ),
+                                            self.token.clone(),
+                                        ))
+                                    }
+                                }
                             }
                         }
                         TokenType::Integer(integer) => Ok(Value::Integer(*integer)),
@@ -69,8 +82,14 @@ impl Node {
                 } else {
                     match token.get_token_type() {
                         TokenType::Identifier(identifier) => {
-                            match run_state.find_local(identifier) {
-                                Some(local) => match local.clone() {
+                            if let Some(structure_template) =
+                                run_state.find_structure_template(identifier)
+                            {
+                                Ok(Value::Structure(StructureInstance::from_template(
+                                    structure_template,
+                                )))
+                            } else if let Some(local) = run_state.find_local(identifier) {
+                                match local.clone() {
                                     Value::NativeFunction(func) => {
                                         let mut args = Vec::with_capacity(self.children.len());
                                         for child in &self.children {
@@ -90,11 +109,12 @@ impl Node {
                                         "must be a function or macro".to_string(),
                                         self.token.clone(),
                                     )),
-                                },
-                                None => Err(Error::new(
+                                }
+                            } else {
+                                Err(Error::new(
                                     format!("could not find identifier: \"{}\"", identifier),
                                     self.token.clone(),
-                                )),
+                                ))
                             }
                         }
                         _ => Err(Error::new(

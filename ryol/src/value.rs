@@ -1,4 +1,5 @@
 use crate::function::{NativeFunction, NativeMacro};
+use crate::structure::StructureInstance;
 use std::cmp;
 use std::fmt::{self, Write};
 
@@ -13,6 +14,8 @@ pub enum Value {
     String(String),
 
     List(Vec<Value>),
+
+    Structure(StructureInstance),
 
     NativeFunction(NativeFunction),
     NativeMacro(NativeMacro),
@@ -41,6 +44,7 @@ impl cmp::PartialEq for Value {
             (Value::Float(x), Value::Float(y)) => x == y,
             (Value::String(x), Value::String(y)) => x == y,
             (Value::List(x_list), Value::List(y_list)) => compare_list(x_list, y_list),
+            (Value::Structure(x_struct), Value::Structure(y_struct)) => x_struct == y_struct,
             (Value::NativeFunction(x), Value::NativeFunction(y)) => x == y,
             (Value::NativeMacro(x), Value::NativeMacro(y)) => {
                 std::ptr::eq(x as *const NativeMacro, y as *const NativeMacro)
@@ -62,6 +66,7 @@ impl fmt::Debug for Value {
                 Value::Float(float) => format!("Value::Float({})", float),
                 Value::String(string) => format!("Value::String(\"{}\")", string),
                 Value::List(list) => format!("{:?}", list),
+                Value::Structure(structure) => format!("Value::Structure({:?})", structure),
                 Value::NativeFunction(native_function) => format!(
                     "Value::NativeFunction({:#x})",
                     native_function as *const NativeFunction as u64
@@ -107,6 +112,7 @@ impl fmt::Display for Value {
             }
             Value::String(string) => string.clone(),
             Value::List(list) => list_to_string(list)?,
+            Value::Structure(structure) => format!("{}", structure),
             Value::NativeFunction(native_function) => {
                 let func_ptr = native_function as *const NativeFunction;
 

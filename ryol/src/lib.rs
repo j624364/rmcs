@@ -1,9 +1,11 @@
 pub mod error;
+pub mod expose_utils;
 pub mod function;
 pub mod node;
 pub mod parser;
 pub mod run_state;
 pub mod std;
+pub mod structure;
 pub mod tokeniser;
 pub mod value;
 pub mod variable;
@@ -39,9 +41,11 @@ pub fn eval(source: &str) -> Result<Value, EvalError> {
 pub mod prelude {
     pub use crate::error::Error;
     pub use crate::eval;
+    pub use crate::expose_utils::*;
     pub use crate::function::{NativeFunction, NativeMacro};
     pub use crate::node::Node;
     pub use crate::run_state::RunState;
+    pub use crate::structure::{StructureInstance, StructureTemplate};
     pub use crate::tokeniser::{Token, TokenType};
     pub use crate::value::Value;
     pub use crate::variable::Variable;
