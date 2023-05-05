@@ -5,8 +5,20 @@ pub fn add_basic_lib(run_state: &mut RunState) -> Result<(), Error> {
     run_state.expose_macro("set", std_basic_set)?;
     run_state.expose_macro("if", std_basic_if)?;
     run_state.expose_macro("times", std_basic_times)?;
+    run_state.expose_macro("true", value_true)?;
+    run_state.expose_macro("false", value_false)?;
 
     Ok(())
+}
+
+// todo: make sure a leaf node
+fn value_true(_: &mut RunState, _node: &Node) -> Result<Value, Error> {
+    Ok(Value::Boolean(true))
+}
+
+// todo: make sure a leaf node
+fn value_false(_: &mut RunState, _node: &Node) -> Result<Value, Error> {
+    Ok(Value::Boolean(false))
 }
 
 fn set_local(run_state: &mut RunState, node: &Node, is_const: bool) -> Result<(), Error> {
