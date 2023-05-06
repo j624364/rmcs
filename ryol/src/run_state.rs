@@ -88,6 +88,12 @@ impl Scope {
     }
 }
 
+impl Default for Scope {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct RunState {
     scopes: VecDeque<Scope>,
@@ -166,5 +172,11 @@ impl RunState {
             },
             Err(tokeniser_error) => Err(EvalError::TokeniserError(tokeniser_error)),
         }
+    }
+}
+
+impl Default for RunState {
+    fn default() -> Self {
+        Self::new()
     }
 }
