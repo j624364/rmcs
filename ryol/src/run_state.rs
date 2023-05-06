@@ -72,11 +72,11 @@ impl Scope {
 
     pub fn set_structure_template(
         &mut self,
-        identifier: &String,
+        identifier: &str,
         structure_template: StructureTemplate,
     ) {
         self.structure_templates
-            .insert(identifier.clone(), structure_template);
+            .insert(identifier.to_string(), structure_template);
     }
 
     pub fn structure_template_exists(&self, identifier: &String) -> bool {
