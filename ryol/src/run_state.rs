@@ -138,7 +138,7 @@ impl RunState {
             }
         }
 
-        return None;
+        None
     }
 
     pub fn find_structure_template(&self, identifier: &String) -> Option<&StructureTemplate> {
