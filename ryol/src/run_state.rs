@@ -97,27 +97,38 @@ impl Default for Scope {
 #[derive(Debug, Clone)]
 pub struct RunState {
     scopes: VecDeque<Scope>,
+    use_structures: bool,
 }
 
 impl RunState {
-    pub fn new_empty() -> Self {
+    fn new_internal(include_std_lib: bool) -> Self {
         let mut output = Self {
             scopes: VecDeque::with_capacity(512),
+            use_structures: include_std_lib,
         };
 
         // make sure there is one global scope
         output.scopes.push_back(Scope::new());
 
-        output
-    }
-
-    pub fn new() -> Self {
-        let mut output = Self::new_empty();
+        if include_std_lib {
 
         // should never have an error
         add_std_lib(&mut output).unwrap();
+        }
 
         output
+    }
+
+    pub fn new_empty() -> Self {
+        Self::new_internal(false)
+    }
+
+    pub fn new() -> Self {
+        Self::new_internal(true)
+    }
+
+    pub fn use_structures(&self) -> bool {
+        self.use_structures
     }
 
     pub fn find_local(&self, identifier: &String) -> Option<&Value> {
