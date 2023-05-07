@@ -109,7 +109,7 @@ impl Node {
         } else if let Some(local) = run_state.find_local(identifier) {
             match local {
                 Value::NativeFunction(func) => {
-                    self.evaluate_native_function(run_state, *func, token)
+                    self.evaluate_native_function(run_state, func, token)
                 }
                 Value::NativeMacro(func) => func(run_state, self),
                 _ => Ok(local.clone()),

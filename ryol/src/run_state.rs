@@ -28,7 +28,7 @@ impl Scope {
     }
 
     // todo: make into Option<&Variable>
-    pub fn get_local(&self, identifier: &String) -> Option<&Value> {
+    pub fn get_local(&self, identifier: &String) -> Option<Value> {
         Some(self.locals.get(identifier)?.get())
     }
 
@@ -111,9 +111,8 @@ impl RunState {
         output.scopes.push_back(Scope::new());
 
         if include_std_lib {
-
-        // should never have an error
-        add_std_lib(&mut output).unwrap();
+            // should never have an error
+            add_std_lib(&mut output).unwrap();
         }
 
         output
@@ -131,7 +130,7 @@ impl RunState {
         self.use_structures
     }
 
-    pub fn find_local(&self, identifier: &String) -> Option<&Value> {
+    pub fn find_local(&self, identifier: &String) -> Option<Value> {
         for scope in self.scopes.iter().rev() {
             if scope.local_exists(identifier) {
                 return scope.get_local(identifier);

@@ -53,6 +53,37 @@ impl StructureInstance {
 
         Self { members }
     }
+
+    pub fn has_member(&self, identifier: &String) -> bool {
+        self.members.contains_key(identifier)
+    }
+
+    pub fn get_member(&self, identifier: &String) -> Option<Value> {
+        Some(self.members.get(identifier)?.get())
+    }
+
+    pub fn set_member(&self, identifier: &String, value: Value) -> Result<(), Error> {
+        match self.members.get(identifier) {
+            Some(member) => {
+                if member.is_const() {
+                    Err(Error::new(
+                        format!("member: \"{}\" is const", identifier),
+                        None,
+                    ))
+                }
+                else {
+                    member.set(value);
+                    Ok(())
+                }
+            }
+            None => {
+                Err(Error::new(
+                    format!("member: \"{}\" does not exist", identifier),
+                    None,
+                ))
+            }
+        }
+    }
 }
 
 impl fmt::Debug for StructureInstance {

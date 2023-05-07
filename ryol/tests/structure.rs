@@ -21,4 +21,25 @@ fn structure_standard_usage() {
         eval("(def-struct vec2d x y) (vec2d)").unwrap(),
         Value::Structure(vec2d)
     );
+
+    assert!(
+        eval("(def-struct vec2d x y) (set v (vec2d)) (set-member v z 2)").is_err(),
+    );
+
+    assert_eq!(
+        eval("(def-struct vec2d x y) (set v (vec2d)) (set-member v x 2) (get-member v x)").unwrap(),
+        Value::Integer(2)
+    );
+    assert_eq!(
+        eval("(def-struct vec2d x y) (set v (vec2d)) (set-member v y 3) (get-member v y)").unwrap(),
+        Value::Integer(3)
+    );
+    assert_eq!(
+        eval("(def-struct vec2d x y) (set v (vec2d)) (set-member v x 2) (set-member v y 3) (get-member v x)").unwrap(),
+        Value::Integer(2)
+    );
+    assert_eq!(
+        eval("(def-struct vec2d x y) (set v (vec2d)) (set-member v x 2) (set-member v y 3) (get-member v y)").unwrap(),
+        Value::Integer(3)
+    );
 }

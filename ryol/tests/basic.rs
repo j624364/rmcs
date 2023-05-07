@@ -32,7 +32,7 @@ fn const_tests() {
 
     // should have the correct value
     assert_eq!(
-        *run_state
+        run_state
             .get_local_scope_mut()
             .get_local(&identifier)
             .unwrap(),
@@ -78,7 +78,7 @@ fn variable_set_tests() {
 
     // should have the correct value
     assert_eq!(
-        *run_state
+        run_state
             .get_local_scope_mut()
             .get_local(&identifier)
             .unwrap(),
